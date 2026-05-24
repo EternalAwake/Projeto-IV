@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Teorias Gerais - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .teoria-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 100%;
+            position: relative;
+        }
+        .teoria-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .card-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .teoria-card:hover .card-actions {
+            opacity: 1;
+        }
+        .btn-action {
+            background: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .filtro-categorias {
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-categoria {
+            margin: 0.25rem;
+            border-radius: 2rem;
+            transition: all 0.2s ease;
+        }
+        .btn-categoria.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">Song System - Teoria Musical</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a th:href="@{/logout}" class="btn btn-outline-light">Sair</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white active">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <!-- Alertas -->
+                <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${sucesso}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${erro}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-0 text-dark fw-bold">
+                            <i class="bi bi-folder2-open me-2"></i>Teorias Gerais
+                        </h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mt-2 mb-0">
+                                <li class="breadcrumb-item"><a th:href="@{/inicio}">Início</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/teoria}">Teoria</a></li>
+                                <li class="breadcrumb-item active">Teorias Gerais</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <a th:href="@{/teoria/geral/novo}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Nova Teoria
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filtro de Categorias -->
+                <div class="filtro-categorias" th:if="${not #lists.isEmpty(categorias)}">
+                    <div class="d-flex flex-wrap justify-content-center">
+                        <button class="btn btn-outline-primary btn-categoria active" data-categoria="todas">
+                            <i class="bi bi-grid-3x3-gap-fill me-1"></i> Todas
+                        </button>
+                        <button th:each="cat : ${categorias}"
+                                class="btn btn-outline-primary btn-categoria"
+                                th:data-categoria="${cat}"
+                                th:text="${cat}">
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid de Cards -->
+                <div class="row g-4" th:if="${#lists.isEmpty(teorias)}">
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <h4 class="mt-3 text-muted">Nenhuma teoria cadastrada</h4>
+                            <p class="text-muted">Comece cadastrando sua primeira teoria musical.</p>
+                            <a th:href="@{/teoria/geral/novo}" class="btn btn-primary mt-2">
+                                <i class="bi bi-plus-circle me-2"></i>Cadastrar Primeira Teoria
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4" th:unless="${#lists.isEmpty(teorias)}">
+                    <div class="col-md-6 col-lg-4" th:each="teoria : ${teorias}">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm h-100 teoria-card">
+                            <div class="card-actions">
+                                <a th:href="@{/teoria/geral/editar/{id}(id=${teoria.id})}"
+                                   class="btn btn-sm btn-action btn-outline-primary"
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-sm btn-action btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalExcluir"
+                                        th:data-id="${teoria.id}"
+                                        th:data-titulo="${teoria.titulo}"
+                                        title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            <div class="card-body text-center p-4"
+                                 th:onclick="'location.href=\'' + @{/teoria/geral/visualizar/{id}(id=${teoria.id})} + '\''"
+                                 style="cursor: pointer;">
+                                <div class="icon-circle"
+                                     th:classappend="'bg-' + ${teoria.corIcone} + ' bg-opacity-10'">
+                                    <i class="bi"
+                                       th:classappend="${teoria.icone}"
+                                       th:class="'bi ' + ${teoria.icone} + ' fs-1 text-' + ${teoria.corIcone}"></i>
+                                </div>
+                                <h5 class="fw-bold mb-2" th:text="${teoria.titulo}">Título</h5>
+                                <p class="text-muted small mb-3" th:text="${teoria.descricao}">Descrição</p>
+                                <span class="badge rounded-pill"
+                                      th:classappend="'bg-' + ${teoria.tipoBadge}"
+                                      th:text="${teoria.categoria}">
+                                    Categoria
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a teoria <strong id="teoriaTitulo"></strong>?</p>
+                <p class="text-danger small">Esta ação não poderá ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <form id="formExcluir" method="post">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Filtro por categoria
+    document.querySelectorAll('.btn-categoria').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-categoria').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const categoria = this.dataset.categoria;
+            const cards = document.querySelectorAll('.col-md-6');
+
+            cards.forEach(card => {
+                const cardCategoria = card.querySelector('.badge')?.innerText;
+                if (categoria === 'todas' || cardCategoria === categoria) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Modal de exclusão
+    const modalExcluir = document.getElementById('modalExcluir');
+    modalExcluir.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const id = button.dataset.id;
+        const titulo = button.dataset.titulo;
+
+        document.getElementById('teoriaTitulo').innerText = titulo;
+        const form = document.getElementById('formExcluir');
+        form.action = '/teoria/geral/excluir/' + id;
+    });
+
+    // Auto-fechar alerts após 5 segundos
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Alterar Música - Song System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        /* Estilos da Sidebar */
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Estilos básicos para o menu */
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important; /* Azul padrão do Bootstrap */
+            color: white !important;
+            box-shadow: none;
+        }
+
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .border-secondary {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Scrollbar personalizada (opcional) */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+        .input-group .form-control,
+        .input-group .form-select {
+            border-left: none;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .section-divider span {
+            padding: 0 1rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- 1. HEADER (TOPO) -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" href="#">
+                Song System - Repertório e Estudo Musical
+            </a>
+
+            <!-- Link de Logout à direita -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a th:href="@{/logout}" class="btn btn-outline-light d-flex align-items-center" title="Sair do Sistema">
+                        <i class="bi bi-box-arrow-right me-2 ms-2 d-none d-lg-inline"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white active">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div>
+                                <h1 class="h2 mb-0 text-dark fw-bold">
+                                    <i class="bi bi-music-note-beamed me-2"></i>Alterar Música
+                                </h1>
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mt-2 mb-0">
+                                        <li class="breadcrumb-item"><a th:href="@{/inicio}" class="text-decoration-none text-primary">Início</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca}" class="text-decoration-none text-primary">Biblioteca</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/bandas}" class="text-decoration-none text-primary">Bandas</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/bandas/visualizar/{id}(id=${musica.bandaDTO.bandaId})}" class="text-decoration-none text-primary" th:text="${musica.bandaDTO.bandaNome}">Pink Floyd</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/bandas/visualizar/visualizarmusica/{id}(id=${musica.musicaId})}" class="text-decoration-none text-primary" th:text="${musica.musicaNome}"></a></li>
+                                        <li class="breadcrumb-item active" aria-current="page">Alterar Música</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <span th:text="${mensagem}"></span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <span th:text="${erro}"></span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <form th:action="@{/biblioteca/bandas/visualizar/visualizarmusica/alterarmusica}" th:object="${musica}" method="post" class="needs-validation" novalidate>
+
+                            <!-- CAMPO HIDDEN COM O ID -->
+                            <input type="hidden" th:field="*{musicaId}">
+
+                            <div class="section-divider">
+                                <span>INFORMAÇÕES BÁSICAS</span>
+                            </div>
+
+                            <!-- INFORMAÇÕES BÁSICAS -->
+                            <div class="row g-4">
+                                <div class="col-md-8">
+                                    <label class="form-label fw-medium">
+                                        Nome da Música <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-music-note text-primary"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-control-lg border-start-0 rounded-3-end"
+                                               th:field="*{musicaNome}"
+                                               required>
+                                        <div class="invalid-feedback">Por favor, insira o nome da música.</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">Tom</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-music-note-beamed text-primary"></i>
+                                        </span>
+                                        <select class="form-select border-start-0 rounded-3-end" th:field="*{musicaTom}">
+                                            <option value="">Selecione o tom</option>
+                                            <option value="C">C (Dó Maior)</option>
+                                            <option value="Cm">Cm (Dó Menor)</option>
+                                            <option value="C#">C# (Dó Sustenido Maior)</option>
+                                            <option value="C#m">C#m (Dó Sustenido Menor)</option>
+                                            <option value="D">D (Ré Maior)</option>
+                                            <option value="Dm">Dm (Ré Menor)</option>
+                                            <option value="D#">D# (Ré Sustenido Maior)</option>
+                                            <option value="D#m">D#m (Ré Sustenido Menor)</option>
+                                            <option value="E">E (Mi Maior)</option>
+                                            <option value="Em">Em (Mi Menor)</option>
+                                            <option value="F">F (Fá Maior)</option>
+                                            <option value="Fm">Fm (Fá Menor)</option>
+                                            <option value="F#">F# (Fá Sustenido Maior)</option>
+                                            <option value="F#m">F#m (Fá Sustenido Menor)</option>
+                                            <option value="G">G (Sol Maior)</option>
+                                            <option value="Gm">Gm (Sol Menor)</option>
+                                            <option value="G#">G# (Sol Sustenido Maior)</option>
+                                            <option value="G#m">G#m (Sol Sustenido Menor)</option>
+                                            <option value="A">A (Lá Maior)</option>
+                                            <option value="Am">Am (Lá Menor)</option>
+                                            <option value="A#">A# (Lá Sustenido Maior)</option>
+                                            <option value="A#m">A#m (Lá Sustenido Menor)</option>
+                                            <option value="B">B (Si Maior)</option>
+                                            <option value="Bm">Bm (Si Menor)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">Duração</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-clock text-primary"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0 rounded-3-end"
+                                               th:field="*{musicaDuracao}">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">Afinação</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-tuner text-primary"></i>
+                                        </span>
+                                        <select class="form-select border-start-0 rounded-3-end" th:field="*{musicaAfinacao}">
+                                            <option value="E Standard (E A D G B e)">E A D G B e</option>
+                                            <option value="D# Standard (D# G# C# F# A# d#)">D# (D# G# C# F# A# d#) - meio tom</option>
+                                            <option value="D Standard (D G C F A d)">D (D G C F A d) - 1 tom</option>
+                                            <option value="C# Standard (C# F# B E G# c#)">C# (C# F# B E G# c#) - 1 tom e meio</option>
+                                            <option value="C Standard (C F A# D# G c")>C (C F A# D# G c) - 2 tons</option>
+                                            <option value="B Standard (B E A D F# b")>B (B E A D F# b) - 2 tons e meio</option>
+                                            <option value="A# Standard (A# D# G# C# F a#")>A# (A# D# G# C# F a#) - 3 tons</option>
+                                            <option value="A Standard (A D G C E a")>A (A D G C E a) - 3 tons e meio</option>
+                                            <option value="G# Standard (G# C# F# B D# g#")>G# (G# C# F# B D# g#) - 4 tons</option>
+                                            <option value="G Standard (G C F A# D g")>G# (G C F A# D g) - 4 tons e meio</option>
+                                            <option value="F# Standard (F# B E A C# f#")>F# (F# B E A C# f#) - 5 tons</option>
+                                            <option value="F Standard (F A# D# G# C f")>F (F A# D# G# C f) - 5 tons e meio</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" th:field="*{musicaDestaque}" id="musicaDestaque">
+                                        <label class="form-check-label fw-medium" for="musicaDestaque">
+                                            <i class="bi bi-star-fill text-warning me-2"></i>
+                                            Marcar como música em destaque
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <span>ANOTAÇÕES</span>
+                            </div>
+
+                            <!-- ANOTAÇÕES -->
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-medium">Anotações e Observações</label>
+                                    <textarea class="form-control rounded-4"
+                                              th:field="*{musicaAnotacoes}"
+                                              rows="6"
+                                              placeholder="Escreva aqui informações importantes sobre a música: estrutura, acordes, dicas de execução, referências..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <span>ÁLBUM</span>
+                            </div>
+
+                            <!-- ÁLBUM-->
+                            <div class="row g-4">
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium">Banda/Artista</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-people-fill text-primary"></i>
+                                        </span>
+                                        <select class="form-select border-start-0 rounded-3-end bg-light"
+                                                th:field="*{bandaId}"
+                                                disabled
+                                                style="cursor: not-allowed;">
+                                            <option th:each="banda : ${bandas}"
+                                                    th:value="${banda.bandaId}"
+                                                    th:text="${banda.bandaNome}">
+                                            </option>
+                                        </select>
+                                        <input type="hidden" th:field="*{bandaId}">
+                                    </div>
+                                    <div class="form-text text-muted mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Esta música pertence a esta banda e não pode ser transferida
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium">Álbum</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-disc-fill text-primary"></i>
+                                        </span>
+                                        <select class="form-select border-start-0 rounded-3-end" th:field="*{albumId}">
+                                            <option value="">Nenhum (música avulsa)</option>
+                                            <option th:each="album : ${albuns}"
+                                                    th:value="${album.albumId}"
+                                                    th:text="${album.albumNome}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- BARRA DE AÇÕES -->
+                            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                                <a th:href="@{/biblioteca/bandas/visualizar/visualizarmusica/{id}(id=${musica.musicaId})}" class="btn btn-outline-secondary rounded-3 px-4 py-2">
+                                    <i class="bi bi-x-lg me-2"></i>Cancelar
+                                </a>
+                                <div class="d-flex gap-2">
+                                    <button type="reset" class="btn btn-outline-primary rounded-3 px-4 py-2">
+                                        <i class="bi bi-eraser me-2"></i>Limpar
+                                    </button>
+                                    <button type="submit" class="btn btn-primary rounded-3 px-5 py-2 shadow-sm">
+                                        <i class="bi bi-check-lg me-2"></i>Alterar Música
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+</script>
+
+</body>
+</html>

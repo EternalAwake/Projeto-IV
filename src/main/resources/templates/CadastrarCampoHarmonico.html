@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar Campo Harmônico - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .section-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .section-divider span {
+            padding: 0 1rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        }
+        .grau-card {
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        .grau-card:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">Song System - Teoria Musical</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a th:href="@{/logout}" class="btn btn-outline-light">Sair</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white active">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-0 text-dark fw-bold">
+                            <i class="bi bi-diagram-3 me-2"></i>Cadastrar Campo Harmônico
+                        </h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mt-2 mb-0">
+                                <li class="breadcrumb-item"><a th:href="@{/inicio}">Inicío</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/teoria}">Teoria</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/teoria/campo-harmonico}">Campos Harmônicos</a></li>
+                                <li class="breadcrumb-item active">Novo Campo</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <form th:action="@{/teoria/campo-harmonico/salvar-campo-completo}" method="post">
+                            <!-- Seleção do Tom -->
+                            <div class="mb-4">
+                                <label class="form-label fw-medium">Tom do Campo Harmônico <span class="text-danger">*</span></label>
+                                <select name="tom" class="form-select form-select-lg" required>
+                                    <option value="">Selecione o tom...</option>
+                                    <option value="C">C (Dó Maior)</option>
+                                    <option value="C#">C# (Dó Sustenido)</option>
+                                    <option value="Db">Db (Ré Bemol)</option>
+                                    <option value="D">D (Ré Maior)</option>
+                                    <option value="D#">D# (Ré Sustenido)</option>
+                                    <option value="Eb">Eb (Mi Bemol)</option>
+                                    <option value="E">E (Mi Maior)</option>
+                                    <option value="F">F (Fá Maior)</option>
+                                    <option value="F#">F# (Fá Sustenido)</option>
+                                    <option value="Gb">Gb (Sol Bemol)</option>
+                                    <option value="G">G (Sol Maior)</option>
+                                    <option value="G#">G# (Sol Sustenido)</option>
+                                    <option value="Ab">Ab (Lá Bemol)</option>
+                                    <option value="A">A (Lá Maior)</option>
+                                    <option value="A#">A# (Lá Sustenido)</option>
+                                    <option value="Bb">Bb (Si Bemol)</option>
+                                    <option value="B">B (Si Maior)</option>
+                                </select>
+                            </div>
+
+                            <div class="section-divider">
+                                <span>ACORDES DO CAMPO HARMÔNICO</span>
+                            </div>
+
+                            <!-- Grau I -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">I Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde1" class="form-control" placeholder="Acorde (ex: C)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo1" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao1" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas1" class="form-control" placeholder="Notas (ex: C - E - G)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grau II -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">II Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde2" class="form-control" placeholder="Acorde (ex: Dm)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo2" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao2" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas2" class="form-control" placeholder="Notas (ex: D - F - A)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grau III -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">III Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde3" class="form-control" placeholder="Acorde (ex: Em)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo3" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao3" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas3" class="form-control" placeholder="Notas (ex: E - G - B)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grau IV -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">IV Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde4" class="form-control" placeholder="Acorde (ex: F)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo4" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao4" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas4" class="form-control" placeholder="Notas (ex: F - A - C)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grau V -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">V Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde5" class="form-control" placeholder="Acorde (ex: G)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo5" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao5" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas5" class="form-control" placeholder="Notas (ex: G - B - D)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grau VI -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">VI Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde6" class="form-control" placeholder="Acorde (ex: Am)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo6" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao6" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas6" class="form-control" placeholder="Notas (ex: A - C - E)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grau VII -->
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-12">
+                                    <div class="grau-card p-3 rounded-4">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-md-2">
+                                                <h5 class="fw-bold mb-0 text-primary">VII Grau</h5>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="acorde7" class="form-control" placeholder="Acorde (ex: B°)" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="tipo7" class="form-select">
+                                                    <option value="Maior">Maior</option>
+                                                    <option value="Menor">Menor</option>
+                                                    <option value="Diminuto">Diminuto</option>
+                                                    <option value="Aumentado">Aumentado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <select name="funcao7" class="form-select">
+                                                    <option value="Tônica">Tônica</option>
+                                                    <option value="Subdominante">Subdominante</option>
+                                                    <option value="Dominante">Dominante</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" name="notas7" class="form-control" placeholder="Notas (ex: B - D - F)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                                <a th:href="@{/teoria/campo-harmonico}" class="btn btn-outline-secondary rounded-3 px-4 py-2">
+                                    <i class="bi bi-x-lg me-2"></i>Cancelar
+                                </a>
+                                <div class="d-flex gap-2">
+                                    <button type="reset" class="btn btn-outline-primary rounded-3 px-4 py-2">
+                                        <i class="bi bi-eraser me-2"></i>Limpar
+                                    </button>
+                                    <button type="submit" class="btn btn-primary rounded-3 px-5 py-2 shadow-sm">
+                                        <i class="bi bi-check-lg me-2"></i>Salvar Campo
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

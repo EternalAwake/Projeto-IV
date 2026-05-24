@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualizar Banda</title>
+    <!-- Incluindo apenas o CSS do Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Manter seu CSS de estilos para componentes internos (cards, badges) -->
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Estilo Inline para garantir 100% da altura da viewport e rolagem correta -->
+    <style>
+        /* Define que o corpo deve ocupar a altura total da tela */
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evita a rolagem dupla na janela principal */
+        }
+        /* O container principal usa Flexbox para Header/Sidebar/Content */
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column; /* Organiza Header no topo e o resto abaixo */
+        }
+        /* A área de Sidebar e Conteúdo (Main) */
+        .content-wrapper {
+            display: flex;
+            flex: 1; /* Ocupa todo o espaço vertical restante */
+            overflow: hidden; /* Garante que apenas o main-content role */
+        }
+        /* Força a rolagem vertical apenas no conteúdo principal */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto; /* PERMITE A ROLAGEM APENAS AQUI */
+            padding: 30px;
+            background-color: #f8f9fa; /* Cor de fundo suave */
+        }
+        /* Estilos da Sidebar para alinhamento com o layout */
+        /* Estilos da Sidebar */
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Estilos básicos para o menu */
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important; /* Azul padrão do Bootstrap */
+            color: white !important;
+            box-shadow: none;
+        }
+
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .border-secondary {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Scrollbar personalizada (opcional) */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Estilos para a tela de visualização */
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            background: white !important;
+        }
+
+        /* Avatar da banda */
+        .band-avatar-large {
+            transition: all 0.3s ease;
+        }
+
+        .band-avatar-large:hover {
+            transform: scale(1.02);
+        }
+
+        /* Tabs personalizadas */
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            color: #667eea;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            background-color: transparent;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Badges nas tabs */
+        .nav-tabs .nav-link .badge {
+            font-weight: normal;
+            font-size: 0.75rem;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- 1. HEADER (TOPO) -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" href="#">
+                Song System - Repertório e Estudo Musical
+            </a>
+
+            <!-- Link de Logout à direita -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a th:href="@{/logout}" class="btn btn-outline-light d-flex align-items-center" title="Sair do Sistema">
+                        <i class="bi bi-box-arrow-right me-2 ms-2 d-none d-lg-inline"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- 2. WRAPPER (SIDEBAR + CONTEÚDO PRINCIPAL) -->
+    <div class="content-wrapper">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white active">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 3. CONTEÚDO PRINCIPAL (ROLÁVEL) -->
+        <main class="main-content">
+            <div class="container-fluid px-4">
+
+                <!-- Cabeçalho da página -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div>
+                                <h1 class="h2 mb-0 text-dark fw-bold">
+                                    <i class="bi bi-people-fill me-2"></i>Banda
+                                </h1>
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mt-2 mb-0">
+                                        <li class="breadcrumb-item"><a th:href="@{/inicio}" class="text-decoration-none text-primary">Início</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca}" class="text-decoration-none text-primary">Biblioteca</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/bandas}" class="text-decoration-none text-primary">Bandas</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page" th:text="${banda.bandaNome}"></li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 mt-md-0 d-flex gap-2">
+                        <a th:href="@{/biblioteca/bandas/visualizar/alterarbanda/{id}(id=${banda.bandaId})}" class="btn btn-primary rounded-3 shadow-sm">
+                            <i class="bi bi-pencil me-2"></i>Alterar Banda
+                        </a>
+                        <button class="btn btn-outline-danger rounded-3 excluir-banda"
+                                th:data-banda-id="${banda.bandaId}"
+                                th:data-banda-nome="${banda.bandaNome}">
+                            <i class="bi bi-trash me-2"></i>Excluir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CAPA E INFORMAÇÕES PRINCIPAIS -->
+                <div class="row g-4 mb-4">
+                    <!-- Card da banda (esquerda) -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm h-100">
+                            <div class="card-body p-4 text-center">
+                                <!-- Avatar grande -->
+                                <div style="width: 150px; height: 150px; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; overflow: hidden; cursor: pointer;">
+
+                                    <!-- Imagem atual (se existir) -->
+                                    <img th:if="${banda.bandaImagem != null}"
+                                         th:src="@{${banda.bandaImagem}}"
+                                         style="width: 100%; height: 100%; object-fit: cover;"
+                                         alt="Avatar da banda">
+
+                                    <!-- Fallback com ícone quando não tem imagem -->
+                                    <div th:if="${banda.bandaImagem == null}" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <i class="bi bi-people-fill text-secundary" style="font-size: 4rem;"></i>
+                                        <span class="text-secundary mt-2 small" style="opacity: 0.8;">Sem imagem</span>
+                                    </div>
+                                </div>
+
+                                <h2 class="fw-bold mb-2" th:text="${banda.bandaNome}"></h2>
+
+                                <!-- Informações rápidas em grid -->
+                                <div class="row g-2 mb-4">
+                                    <div class="col-6">
+                                        <div class="bg-light rounded-4 p-3">
+                                            <i class="bi bi-music-note-beamed fs-4 text-primary d-block mb-2"></i>
+                                            <span class="fw-bold fs-5 d-block" th:text="${banda.musicasDTO != null ? banda.musicasDTO.size() : 0}">12</span>
+                                            <span class="small text-muted">Músicas</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-light rounded-4 p-3">
+                                            <i class="bi bi-disc-fill fs-4 text-primary d-block mb-2"></i>
+                                            <span class="fw-bold fs-5 d-block" th:text="${banda.musicasDTO != null ? banda.musicasDTO.size() : 0}">4</span>
+                                            <span class="small text-muted">Álbuns</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Metadados -->
+                                <div class="text-start border-top pt-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-calendar3 text-primary me-2"></i>
+                                        <span><span class="fw-medium">Formação:</span> <span th:text="${banda.bandaAnoFormacao}"></span></span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2" th:if="${banda.bandaPais} != null">
+                                        <i class="bi bi-geo-alt text-primary me-2"></i>
+                                        <span><span class="fw-medium">País:</span> <span th:text="${banda.bandaPais}"></span></span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-mic text-primary me-2"></i>
+                                        <span><span class="fw-medium">Gênero:</span> <span th:text="${banda.bandaGenero}"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biografia (direita) -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="bi bi-file-text me-2 text-primary"></i>Biografia
+                                </h5>
+                                <p class="text-muted mb-4" style="line-height: 1.8;" th:text="${banda.bandaBiografia}"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABS: Álbuns, Músicas -->
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <ul class="nav nav-tabs card-header-tabs" id="bandaDetailTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-4 py-2 fw-semibold" id="albuns-tab" data-bs-toggle="tab" data-bs-target="#albuns" type="button" role="tab">
+                                    <i class="bi bi-disc-fill me-2 text-primary"></i>Álbuns
+                                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2" th:text="${banda.albuns != null ? banda.albuns.size() : 0}">4</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link px-4 py-2 fw-semibold" id="musicas-tab" data-bs-toggle="tab" data-bs-target="#musicas" type="button" role="tab">
+                                    <i class="bi bi-music-note-beamed me-2 text-primary"></i>Músicas
+                                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2" th:text="${banda.musicasDTO != null ? banda.musicasDTO.size() : 0}">12</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="bandaDetailTabContent">
+
+                            <!-- TAB 1: ÁLBUNS -->
+                            <div class="tab-pane fade show active" id="albuns" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h6 class="fw-bold mb-0">Todos os álbuns</h6>
+                                    <a th:href="@{/biblioteca/bandas/visualizar/cadastraralbum/{id}(id=${banda.bandaId})}" class="btn btn-sm btn-outline-primary rounded-3">
+                                        <i class="bi bi-plus-circle me-1"></i>Novo Álbum
+                                    </a>
+                                </div>
+
+                                <!-- Mensagem quando não há álbuns -->
+                                <div th:if="${banda.albuns == null or banda.albuns.isEmpty()}" class="text-center py-5">
+                                    <i class="bi bi-disc-fill fs-1 text-muted d-block mb-3"></i>
+                                    <p class="text-muted">Nenhum álbum cadastrado para esta banda.</p>
+                                </div>
+
+                                <!-- Lista de álbuns -->
+                                <div class="row g-4" th:if="${banda.albuns != null and !banda.albuns.isEmpty()}">
+                                    <div th:each="album : ${banda.albuns}" class="col-sm-6 col-lg-4 col-xl-3">
+                                        <div class="card border-0 bg-white rounded-4 shadow-sm h-100 hover-card overflow-hidden">
+                                            <div class="position-relative">
+                                                <!-- Capa do álbum -->
+                                                <div style="height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px 12px 0 0;">
+
+                                                    <img th:if="${album.albumImagem != null}"
+                                                         th:src="@{${album.albumImagem}}"
+                                                         style="width: 100%; height: 100%; object-fit: cover;"
+                                                         alt="Capa do álbum">
+
+                                                    <!-- Ícone grande quando não tem imagem -->
+                                                    <div th:if="${album.albumImagem == null}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                                                        <i class="bi bi-disc-fill text-secundary" style="font-size: 5rem;"></i>
+                                                        <span class="text-secundary mt-2 small" style="opacity: 0.8;">Sem capa</span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Ano no canto -->
+                                                <div class="position-absolute bottom-0 start-0 p-2 w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                                                    <span class="text-white small fw-bold" th:text="${album.albumAnoLancamento}">1998</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="card-body p-3 d-flex flex-column">
+                                                <h6 class="fw-bold mb-1 text-truncate" th:text="${album.albumNome}">The Sound of Perseverance</h6>
+                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                    <i class="bi bi-music-note text-primary small"></i>
+                                                    <span class="small text-muted">
+                                                        <span th:text="${album.musicas != null ? album.musicas.size() : 0}">0</span> músicas
+                                                    </span>
+                                                </div>
+                                                <a th:href="@{/biblioteca/albuns/visualizar/{id}(id=${album.albumId})}"
+                                                   class="btn btn-sm btn-outline-primary rounded-3 w-100 mt-2">
+                                                    Ver detalhes
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TAB 2: MÚSICAS -->
+                            <div class="tab-pane fade" id="musicas" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h6 class="fw-bold mb-0">Todas as músicas</h6>
+                                    <a th:href="@{/biblioteca/bandas/visualizar/cadastrarmusica/{bandaId}(bandaId=${banda.bandaId})}"
+                                       class="btn btn-sm btn-outline-primary rounded-3">
+                                        <i class="bi bi-plus-circle me-1"></i>Adicionar música
+                                    </a>
+                                </div>
+
+                                <!-- Mensagem quando não há músicas -->
+                                <div th:if="${banda.musicasDTO == null or banda.musicasDTO.isEmpty()}" class="text-center py-5">
+                                    <i class="bi bi-music-note-beamed fs-1 text-muted d-block mb-3"></i>
+                                    <p class="text-muted">Nenhuma música cadastrada para esta banda.</p>
+                                </div>
+
+                                <!-- Lista de músicas -->
+                                <div class="table-responsive" th:if="${banda.musicasDTO != null and !banda.musicasDTO.isEmpty()}">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3 py-3 border-0 rounded-start-4">#</th>
+                                            <th class="py-3 border-0">Música</th>
+                                            <th class="py-3 border-0">Álbum</th>
+                                            <th class="py-3 border-0">Tom</th>
+                                            <th class="py-3 border-0">Duração</th>
+                                            <th class="py-3 border-0 text-end pe-3 rounded-end-4">Ações</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="musica, iterStat : ${banda.musicasDTO}">
+                                            <td class="ps-3 fw-medium" th:text="${iterStat.count}">1</td>
+                                            <td th:text="${musica.musicaNome}"></td>
+                                            <td>
+                                                <span th:text="${musica.albumDTO != null ? musica.albumDTO.albumNome : 'Single'}"></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3" th:text="${musica.musicaTom != null ? musica.musicaTom : '—'}"></span>
+                                            </td>
+                                            <td th:text="${musica.musicaDuracao != null ? musica.musicaDuracao : '—'}"></td>
+                                            <td class="text-end pe-3">
+                                                <a th:href="@{/biblioteca/bandas/visualizar/alterarmusica/{id}(id=${musica.musicaId})}" class="btn btn-sm btn-outline-primary rounded-3 me-1" title="Alterar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a th:href="@{/biblioteca/bandas/visualizar/visualizarmusica/{id}(id=${musica.musicaId})}" class="btn btn-sm btn-outline-secondary rounded-3 me-1" title="Ver detalhes">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger rounded-3 excluir-musica"
+                                                        th:data-musica-id="${musica.musicaId}"
+                                                        th:data-musica-nome="${musica.musicaNome}"
+                                                        th:data-banda-id="${banda.bandaId}"
+                                                        title="Excluir">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BANDAS RELACIONADAS (opcional - exibe apenas se houver bandas relacionadas) -->
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4" th:if="${bandasRelacionadas != null and !bandasRelacionadas.isEmpty()}">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-stars me-2 text-primary"></i>Bandas relacionadas
+                        </h5>
+                        <div class="row g-3">
+                            <div th:each="bandaRel : ${bandasRelacionadas}" class="col-md-3 col-6">
+                                <a th:href="@{/biblioteca/bandas/visualizar/{id}(id=${bandaRel.bandaId})}" class="text-decoration-none">
+                                    <div class="d-flex align-items-center gap-2 p-2 bg-light rounded-4 hover-card">
+                                        <div style="width: 40px; height: 40px; border-radius: 10px; overflow: hidden; flex-shrink: 0;"
+                                             th:style="'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);' +
+                                               (${bandaRel.bandaImagem} != null ? 'background-image: url(' + @{${bandaRel.bandaImagem}} + '); background-size: cover; background-position: center;' : '')">
+                                        </div>
+                                        <span class="fw-medium small text-dark" th:text="${bandaRel.bandaNome}"></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+    <!-- FIM DO WRAPPER -->
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+<!-- JavaScript para exclusão -->
+<script th:src="@{/js/excluirBandaView.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Exclusão de música na listagem da banda
+        document.querySelectorAll('.excluir-musica').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const musicaId = this.dataset.musicaId;
+                const musicaNome = this.dataset.musicaNome;
+                const bandaId = this.dataset.bandaId;
+                const row = this.closest('tr');
+
+                if (confirm(`Tem certeza que deseja excluir a música "${musicaNome}"?`)) {
+                    fetch(`/biblioteca/musicas/visualizar/excluir/${musicaId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Música excluída com sucesso!');
+
+                            // Remove a linha da tabela
+                            if (row) {
+                                row.remove();
+                            }
+
+                            // Atualiza o contador de músicas na tab
+                            const musicasCount = document.querySelectorAll('#musicas tbody tr:not(.text-center)').length;
+                            const badgeMusicas = document.querySelector('#musicas-tab .badge');
+                            if (badgeMusicas) {
+                                badgeMusicas.textContent = musicasCount;
+                            }
+
+                            // Atualiza o contador principal de músicas no card da banda
+                            const totalMusicasSpan = document.querySelector('.col-6 .fw-bold.fs-5');
+                            if (totalMusicasSpan) {
+                                totalMusicasSpan.textContent = musicasCount;
+                            }
+
+                            // Se não houver mais músicas, mostra a mensagem de vazio
+                            if (musicasCount === 0) {
+                                const tbody = document.querySelector('#musicas tbody');
+                                if (tbody) {
+                                    tbody.innerHTML = `
+                                        <tr>
+                                            <td colspan="6" class="text-center py-5">
+                                                <i class="bi bi-music-note-beamed fs-1 text-muted d-block mb-3"></i>
+                                                <p class="text-muted">Nenhuma música cadastrada para esta banda.</p>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }
+                            }
+                        } else {
+                            alert('Erro ao excluir música. Tente novamente.');
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erro de rede ao excluir música.');
+                    });
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

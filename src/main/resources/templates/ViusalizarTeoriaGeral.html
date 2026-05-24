@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${teoria.titulo} + ' - Song System'">Teoria - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .teoria-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .teoria-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .teoria-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .teoria-body {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .teoria-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        .teoria-body h2 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .teoria-body h3 {
+            margin-top: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: #0d6efd;
+        }
+        .teoria-body pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        .btn-voltar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        @media print {
+            .sidebar, .btn-voltar, header, .btn-actions {
+                display: none !important;
+            }
+            .main-content {
+                padding: 0 !important;
+            }
+            .teoria-body {
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">Song System - Teoria Musical</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a th:href="@{/logout}" class="btn btn-outline-light">Sair</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white active">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <div class="teoria-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h2 mb-0 text-dark fw-bold">
+                                <i th:if="${acao == 'nova'}" class="bi bi-folder2-open me-2"></i>
+                                <i th:unless="${acao == 'nova'}" class="bi bi-folder2-open me-2"></i>
+                                <span th:text="${acao == 'nova'} ? 'Nova Teoria' : 'Editar Teoria'"></span>
+                            </h1>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mt-2 mb-0">
+                                    <li class="breadcrumb-item"><a th:href="@{/inicio}">Início</a></li>
+                                    <li class="breadcrumb-item"><a th:href="@{/teoria}">Teoria</a></li>
+                                    <li class="breadcrumb-item"><a th:href="@{/teoria/geral}">Teorias Gerais</a></li>
+                                    <li class="breadcrumb-item active">Visualizar</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <a th:href="@{/teoria/geral}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                    <!-- Header -->
+                    <div class="teoria-header">
+                        <div class="teoria-icon"
+                             th:classappend="'bg-' + ${teoria.corIcone} + ' bg-opacity-10'">
+                            <i class="bi"
+                               th:classappend="${teoria.icone}"
+                               th:class="'bi ' + ${teoria.icone} + ' fs-1 text-' + ${teoria.corIcone}"></i>
+                        </div>
+                        <h1 class="fw-bold mb-2" th:text="${teoria.titulo}">Título da Teoria</h1>
+                        <div class="mb-3">
+                            <span class="badge rounded-pill"
+                                  th:classappend="'bg-' + ${teoria.tipoBadge}"
+                                  th:text="${teoria.categoria}">
+                                Categoria
+                            </span>
+                        </div>
+                        <p class="lead text-muted" th:text="${teoria.descricao}">Descrição</p>
+                        <hr>
+                    </div>
+
+                    <!-- Botões de ação (apenas para admin) -->
+                    <div class="btn-actions text-center mb-4">
+                        <a th:href="@{/teoria/geral/editar/{id}(id=${teoria.id})}"
+                           class="btn btn-outline-primary me-2">
+                            <i class="bi bi-pencil me-2"></i>Editar Teoria
+                        </a>
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalExcluir">
+                            <i class="bi bi-trash me-2"></i>Excluir Teoria
+                        </button>
+                        <button onclick="window.print()" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-printer me-2"></i>Imprimir
+                        </button>
+                    </div>
+
+                    <!-- Conteúdo -->
+                    <div class="teoria-body" th:utext="${teoria.conteudo}">
+                        Conteúdo da teoria aqui
+                    </div>
+
+                    <!-- Meta informações -->
+                    <div class="mt-4 text-center text-muted small">
+                        <p>
+                            <i class="bi bi-calendar3 me-1"></i>
+                            Criado em: <span th:text="${#temporals.format(teoria.dataCriacao, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span th:if="${teoria.dataAtualizacao != null && teoria.dataAtualizacao != teoria.dataCriacao}">
+                                <br><i class="bi bi-pencil-square me-1"></i>
+                                Última atualização: <span th:text="${#temporals.format(teoria.dataAtualizacao, 'dd/MM/yyyy HH:mm')}"></span>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Botão Voltar ao Topo -->
+<button class="btn btn-primary btn-voltar" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="display: none;">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<!-- Modal de Exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a teoria <strong th:text="${teoria.titulo}"></strong>?</p>
+                <p class="text-danger small">Esta ação não poderá ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <form th:action="@{/teoria/geral/excluir/{id}(id=${teoria.id})}" method="post">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Mostrar/esconder botão voltar ao topo
+    window.addEventListener('scroll', function() {
+        const btnVoltar = document.querySelector('.btn-voltar');
+        if (window.scrollY > 300) {
+            btnVoltar.style.display = 'flex';
+        } else {
+            btnVoltar.style.display = 'none';
+        }
+    });
+
+    // Adicionar âncoras automáticas para cabeçalhos
+    document.addEventListener('DOMContentLoaded', function() {
+        const headers = document.querySelectorAll('.teoria-body h2, .teoria-body h3');
+        headers.forEach(header => {
+            const id = header.innerText.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            header.id = id;
+
+            const link = document.createElement('a');
+            link.href = `#${id}`;
+            link.className = 'anchor-link';
+            link.innerHTML = '<i class="bi bi-link-45deg"></i>';
+            link.style.opacity = '0';
+            link.style.marginLeft = '8px';
+            link.style.transition = 'opacity 0.2s';
+
+            header.style.position = 'relative';
+            header.appendChild(link);
+
+            header.addEventListener('mouseenter', () => link.style.opacity = '1');
+            header.addEventListener('mouseleave', () => link.style.opacity = '0');
+        });
+    });
+</script>
+
+</body>
+</html>

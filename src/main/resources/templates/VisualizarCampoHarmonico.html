@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${tom} + ' - Campo Harmônico'">Campo Harmônico - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .acorde-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .acorde-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        .grau-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+        }
+        .funcao-tonica { background-color: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .funcao-subdominante { background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .funcao-dominante { background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .modal-content {
+            border-radius: 1rem !important;
+        }
+        .note-list {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">Song System - Teoria Musical</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a th:href="@{/logout}" class="btn btn-outline-light">Sair</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white active">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-0 text-dark fw-bold">
+                            <i class="bi bi-diagram-3 me-2"></i>Campo Harmônico de <span th:text="${tom}">C</span>
+                        </h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mt-2 mb-0">
+                                <li class="breadcrumb-item"><a th:href="@{/inicio}">Início</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/teoria}">Teoria</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/teoria/campo-harmonico}">Campo Harmônico</a></li>
+                                <li class="breadcrumb-item active" th:text="${tom}">Visualizar Campo Harmônico</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <a th:href="@{/teoria/campo-harmonico}" class="btn btn-outline-secondary rounded-3">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+
+                <!-- CARDS DOS ACORDES -->
+                <div class="row g-4">
+                    <div th:each="campo : ${campos}" class="col-md-6 col-lg-4">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm h-100 acorde-card"
+                             th:classappend="${campo.funcao == 'Tônica'} ? 'funcao-tonica' : (${campo.funcao == 'Subdominante'} ? 'funcao-subdominante' : 'funcao-dominante')">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary grau-badge"
+                                              th:text="${campo.grau} + 'º Grau'">1º Grau</span>
+                                    </div>
+                                    <span class="badge" th:classappend="${campo.tipo == 'Maior'} ? 'bg-primary' : (${campo.tipo == 'Menor'} ? 'bg-success' : 'bg-secondary')"
+                                          th:text="${campo.tipo}">Maior</span>
+                                </div>
+                                <h3 class="fw-bold mb-2" th:text="${campo.acorde}">C</h3>
+                                <p class="text-muted small mb-2 note-list">
+                                    <i class="bi bi-music-note me-1"></i>
+                                    <span th:text="${campo.notas}">C - E - G</span>
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary rounded-3 me-1 editar-btn"
+                                            th:data-id="${campo.id}"
+                                            th:data-grau="${campo.grau}"
+                                            th:data-acorde="${campo.acorde}"
+                                            th:data-tipo="${campo.tipo}"
+                                            th:data-funcao="${campo.funcao}"
+                                            th:data-notas="${campo.notas}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editarAcordeModal">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-3 excluir-btn"
+                                            th:data-id="${campo.id}"
+                                            th:data-acorde="${campo.acorde}">
+                                        <i class="bi bi-trash"></i> Excluir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão para adicionar novo acorde -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary rounded-3" data-bs-toggle="modal" data-bs-target="#novoAcordeModal">
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar Acorde
+                    </button>
+                </div>
+
+                <!-- Mensagem quando não há acordes -->
+                <div th:if="${campos == null or campos.isEmpty()}" class="text-center py-5">
+                    <i class="bi bi-music-note-beamed fs-1 text-muted d-block mb-3"></i>
+                    <p class="text-muted">Nenhum acorde cadastrado para o campo de <strong th:text="${tom}">C</strong>.</p>
+                    <button class="btn btn-primary rounded-3" data-bs-toggle="modal" data-bs-target="#novoAcordeModal">
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar primeiro acorde
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- MODAL PARA NOVO ACORDE -->
+<div class="modal fade" id="novoAcordeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-plus-circle me-2 text-primary"></i>Adicionar Acorde
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/teoria/campo-harmonico/salvar}" method="post">
+                <input type="hidden" name="tom" th:value="${tom}">
+                <div class="modal-body px-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Grau</label>
+                            <select name="grau" class="form-select" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">I</option>
+                                <option value="2">II</option>
+                                <option value="3">III</option>
+                                <option value="4">IV</option>
+                                <option value="5">V</option>
+                                <option value="6">VI</option>
+                                <option value="7">VII</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Acorde</label>
+                            <input type="text" name="acorde" class="form-control" placeholder="Ex: C, Dm, G7" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Tipo</label>
+                            <select name="tipo" class="form-select">
+                                <option value="Maior">Maior</option>
+                                <option value="Menor">Menor</option>
+                                <option value="Diminuto">Diminuto</option>
+                                <option value="Aumentado">Aumentado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Função</label>
+                            <select name="funcao" class="form-select">
+                                <option value="Tônica">Tônica</option>
+                                <option value="Subdominante">Subdominante</option>
+                                <option value="Dominante">Dominante</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Notas</label>
+                            <input type="text" name="notas" class="form-control" placeholder="Ex: C - E - G">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">
+                        <i class="bi bi-check-lg me-2"></i>Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA EDITAR ACORDE -->
+<div class="modal fade" id="editarAcordeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Editar Acorde
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/teoria/campo-harmonico/atualizar}" method="post">
+                <input type="hidden" name="id" id="editId">
+                <input type="hidden" name="tom" th:value="${tom}">
+                <div class="modal-body px-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Grau</label>
+                            <select name="grau" id="editGrau" class="form-select" required>
+                                <option value="1">I</option>
+                                <option value="2">II</option>
+                                <option value="3">III</option>
+                                <option value="4">IV</option>
+                                <option value="5">V</option>
+                                <option value="6">VI</option>
+                                <option value="7">VII</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Acorde</label>
+                            <input type="text" name="acorde" id="editAcorde" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Tipo</label>
+                            <select name="tipo" id="editTipo" class="form-select">
+                                <option value="Maior">Maior</option>
+                                <option value="Menor">Menor</option>
+                                <option value="Diminuto">Diminuto</option>
+                                <option value="Aumentado">Aumentado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Função</label>
+                            <select name="funcao" id="editFuncao" class="form-select">
+                                <option value="Tônica">Tônica</option>
+                                <option value="Subdominante">Subdominante</option>
+                                <option value="Dominante">Dominante</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Notas</label>
+                            <input type="text" name="notas" id="editNotas" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">
+                        <i class="bi bi-check-lg me-2"></i>Atualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Preencher modal de edição
+    document.querySelectorAll('.editar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('editId').value = this.dataset.id;
+            document.getElementById('editGrau').value = this.dataset.grau;
+            document.getElementById('editAcorde').value = this.dataset.acorde;
+            document.getElementById('editTipo').value = this.dataset.tipo;
+            document.getElementById('editFuncao').value = this.dataset.funcao;
+            document.getElementById('editNotas').value = this.dataset.notas || '';
+        });
+    });
+
+    // Excluir acorde
+    document.querySelectorAll('.excluir-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const acorde = this.dataset.acorde;
+            if (confirm(`Tem certeza que deseja excluir o acorde ${acorde}?`)) {
+                fetch(`/teoria/campo-harmonico/excluir-acorde/${id}`, { method: 'DELETE' })
+                    .then(response => response.ok ? location.reload() : alert('Erro ao excluir'));
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bandas</title>
+    <!-- Incluindo apenas o CSS do Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Manter seu CSS de estilos para componentes internos (cards, badges) -->
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Estilo Inline para garantir 100% da altura da viewport e rolagem correta -->
+    <style>
+        /* Define que o corpo deve ocupar a altura total da tela */
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evita a rolagem dupla na janela principal */
+        }
+        /* O container principal usa Flexbox para Header/Sidebar/Content */
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column; /* Organiza Header no topo e o resto abaixo */
+        }
+        /* A área de Sidebar e Conteúdo (Main) */
+        .content-wrapper {
+            display: flex;
+            flex: 1; /* Ocupa todo o espaço vertical restante */
+            overflow: hidden; /* Garante que apenas o main-content role */
+        }
+        /* Força a rolagem vertical apenas no conteúdo principal */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto; /* PERMITE A ROLAGEM APENAS AQUI */
+            padding: 30px;
+            background-color: #f8f9fa; /* Cor de fundo suave */
+        }
+        /* Estilos da Sidebar para alinhamento com o layout */
+        /* Estilos da Sidebar */
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Estilos básicos para o menu */
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important; /* Azul padrão do Bootstrap */
+            color: white !important;
+            box-shadow: none;
+        }
+
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .border-secondary {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Scrollbar personalizada (opcional) */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Estilos para a tela de bandas */
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+
+        /* Avatares com hover */
+        .band-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .hover-card:hover .band-avatar {
+            transform: scale(1.05);
+        }
+
+        /* Botões de visualização ativos */
+        .btn-group .btn.active {
+            background-color: var(--bs-primary);
+            color: white;
+            border-color: var(--bs-primary);
+        }
+
+        /* Apenas o essencial para a tabela */
+        .table th {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .hover-card {
+            transition: all 0.2s ease;
+        }
+
+        /* Paginação ativa */
+        .page-link.active-page {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+
+        /* Modais com bordas arredondadas */
+        .modal-content {
+            border-radius: 1rem !important;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- 1. HEADER (TOPO) -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" href="#">
+                Song System - Repertório e Estudo Musical
+            </a>
+
+            <!-- Link de Logout à direita -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a th:href="@{/logout}" class="btn btn-outline-light d-flex align-items-center" title="Sair do Sistema">
+                        <i class="bi bi-box-arrow-right me-2 ms-2 d-none d-lg-inline"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- 2. WRAPPER (SIDEBAR + CONTEÚDO PRINCIPAL) -->
+    <div class="content-wrapper">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white active">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 3. CONTEÚDO PRINCIPAL (ROLÁVEL) -->
+        <main class="main-content">
+            <div class="container-fluid px-4">
+
+                <!-- Cabeçalho da página -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-0 text-dark fw-bold">
+                            <i class="bi bi-people-fill me-2"></i>Gerenciar Bandas
+                        </h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mt-2 mb-0">
+                                <li class="breadcrumb-item"><a th:href="@{/inicio}" class="text-decoration-none text-primary">Início</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/biblioteca}" class="text-decoration-none text-primary">Biblioteca</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Bandas</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="mt-3 mt-md-0">
+                        <a th:href="@{/biblioteca/bandas/cadastrarbanda}" class="btn btn-primary rounded-3 shadow-sm">
+                            <i class="bi bi-plus-circle me-2"></i>Nova Banda
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ESTATÍSTICAS RÁPIDAS (opcional - pode remover se quiser mais simples) -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="bi bi-people-fill fs-3 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <span class="small text-muted">Total de Bandas</span>
+                                        <h3 class="mb-0 fw-bold" th:text="${totalBandas}"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="bi bi-music-note fs-3 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <span class="small text-muted">Músicas no total</span>
+                                        <h3 class="mb-0 fw-bold" th:text="${totalMusicas}"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="bi bi-disc-fill fs-3 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <span class="small text-muted">Álbuns no total</span>
+                                        <h3 class="mb-0 fw-bold" th:text="${totalAlbuns}"></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILTROS E BUSCA -->
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-body p-3">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-3">
+                                <select class="form-select rounded-3" id="campoFiltro">
+                                    <option value="bandaId">ID da Banda</option>
+                                    <option value="bandaNome">Nome da Banda</option>
+                                    <option value="bandaGenero">Gênero</option>
+                                    <option value="bandaPais">País</option>
+                                    <option value="bandaAnoFormacao">Ano de Formação</option>
+                                    <option value="musicas">Quantidade de Músicas</option>
+                                    <option value="albuns">Quantidade de Álbuns</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select rounded-3" id="operadorFiltro">
+                                    <!-- Operadores serão alterados via JavaScript -->
+                                    <option value="contains">Contém</option>
+                                    <option value="eq">Igual</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control rounded-3" id="valorFiltro" placeholder="Valor para busca...">
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary rounded-3 w-100" id="btnAdicionarFiltro">
+                                    <i class="bi bi-plus-circle me-2"></i>Adicionar Filtro
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filtros aplicados -->
+                        <div class="mt-3" id="filtrosAplicados">
+                            <div th:each="filtro : ${filtros}" class="badge bg-secondary bg-opacity-25 text-dark rounded-pill p-2 me-2 mb-2">
+                                <span th:text="${filtro.campo}"></span>
+                                <span th:text="${filtro.operador}"></span>
+                                <span th:text="${filtro.valor}"></span>
+                                <i class="bi bi-x-circle-fill ms-1 text-danger" style="cursor: pointer;" th:data-index="${filtro.index}" onclick="removerFiltro(this)"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABELA DE BANDAS -->
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">
+                                <i class="bi bi-list-ul me-2 text-primary"></i>
+                                Lista de Bandas
+                            </h5>
+                            <div>
+                                <span class="text-muted small me-2">Mostrar</span>
+                                <select class="form-select form-select-sm d-inline-block w-auto rounded-3">
+                                    <option>10</option>
+                                    <option>25</option>
+                                    <option>50</option>
+                                    <option>100</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3 border-0 rounded-start-4" style="width: 60px;">#</th>
+                                    <th class="py-3 border-0">Banda</th>
+                                    <th class="py-3 border-0">Gênero</th>
+                                    <th class="py-3 border-0">País</th>
+                                    <th class="py-3 border-0">Formação</th>
+                                    <th class="py-3 border-0 text-center">Músicas</th>
+                                    <th class="py-3 border-0 text-center">Álbuns</th>
+                                    <th class="py-3 border-0 text-end pe-4 rounded-end-4">Ações</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="banda : ${listaBandas}">
+                                    <td class="ps-4 fw-medium" th:text="${banda.bandaId}"></td>
+
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <!-- Avatar -->
+                                            <div style="width: 36px; height: 36px; border-radius: 10px; margin-right: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+
+                                                <!-- Se tem imagem, mostra a imagem -->
+                                                <img th:if="${banda.bandaImagem != null}"
+                                                     th:src="@{${banda.bandaImagem}}"
+                                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                                     alt="Avatar">
+
+                                                <!-- Se não tem imagem, mostra o ícone -->
+                                                <div th:if="${banda.bandaImagem == null}"
+                                                     style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="bi bi-people-fill text-secundary" style="font-size: 1.2rem;"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="fw-medium d-block" th:text="${banda.bandaNome}"></span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td th:text="${banda.bandaGenero}"></td>
+                                    <td th:text="${banda.bandaPais}"></td>
+                                    <td th:text="${banda.bandaAnoFormacao}"></td>
+
+                                    <td class="text-center">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3"
+                                              th:text="${banda.musicas != null ? banda.musicas.size() : 0}"></span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3"
+                                              th:text="${banda.albuns != null ? banda.albuns.size() : 0}"></span>
+                                    </td>
+
+                                    <td class="text-end pe-4">
+                                        <a th:href="@{/biblioteca/bandas/visualizar/{id}(id=${banda.bandaId})}"
+                                           class="btn btn-sm btn-outline-secondary rounded-3 me-1">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{/biblioteca/bandas/alterarbanda/{id}(id=${banda.bandaId})}"
+                                           class="btn btn-sm btn-outline-primary rounded-3 me-1">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger rounded-3 excluir"
+                                                th:data-banda-id="${banda.bandaId}"
+                                                title="Excluir">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Mensagem quando não há bandas -->
+                                <tr th:if="${listaBandas == null or listaBandas.isEmpty()}">
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                                        <span class="text-muted">Nenhuma banda cadastrada.</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 py-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center">
+                            <div class="small text-muted">
+                                Mostrando <span class="fw-medium">1</span> a <span class="fw-medium">6</span> de <span class="fw-medium">43</span> bandas
+                            </div>
+                            <nav aria-label="Paginação">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link border-0 bg-transparent text-muted rounded-3" href="#">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item"><a class="page-link border-0 bg-primary text-white rounded-3 mx-1" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link border-0 bg-transparent text-muted rounded-3 mx-1" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link border-0 bg-transparent text-muted rounded-3 mx-1" href="#">3</a></li>
+                                    <li class="page-item"><a class="page-link border-0 bg-transparent text-muted rounded-3 mx-1" href="#">4</a></li>
+                                    <li class="page-item"><a class="page-link border-0 bg-transparent text-muted rounded-3 mx-1" href="#">5</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link border-0 bg-transparent text-muted rounded-3" href="#">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+        <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    </div>
+    <!-- FIM DO WRAPPER -->
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.excluir').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const bandaId = this.dataset.bandaId;
+                const bandaNome = this.closest('tr')?.querySelector('td:nth-child(2) .fw-medium')?.textContent || 'esta banda';
+
+                if (confirm(`Esta ação irá remover também todos os álbuns e músicas relacionados à banda "${bandaNome}". Confirma a exclusão?`)) {
+                    fetch(`/biblioteca/bandas/visualizar/excluir/${bandaId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Banda excluída com sucesso!');
+                            location.reload(); // Recarrega a página para atualizar todos os contadores
+                        } else {
+                            alert('Erro ao excluir banda. Tente novamente.');
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erro de rede ao excluir banda.');
+                    });
+                }
+            });
+        });
+    });
+</script>
+<script>
+    // Operadores por tipo de campo
+    const operadoresPorCampo = {
+        bandaId: [
+            { value: "eq", label: "=" },
+            { value: "lt", label: "<" },
+            { value: "lte", label: "≤" },
+            { value: "gt", label: ">" },
+            { value: "gte", label: "≥" }
+        ],
+        bandaNome: [
+            { value: "contains", label: "Contém" },
+            { value: "eq", label: "Igual" },
+            { value: "startsWith", label: "Começa com" },
+            { value: "endsWith", label: "Termina com" }
+        ],
+        bandaGenero: [
+            { value: "contains", label: "Contém" },
+            { value: "eq", label: "Igual" }
+        ],
+        bandaPais: [
+            { value: "contains", label: "Contém" },
+            { value: "eq", label: "Igual" }
+        ],
+        bandaAnoFormacao: [
+            { value: "eq", label: "=" },
+            { value: "lt", label: "<" },
+            { value: "lte", label: "≤" },
+            { value: "gt", label: ">" },
+            { value: "gte", label: "≥" }
+        ],
+        musicas: [
+            { value: "eq", label: "=" },
+            { value: "lt", label: "<" },
+            { value: "lte", label: "≤" },
+            { value: "gt", label: ">" },
+            { value: "gte", label: "≥" }
+        ],
+        albuns: [
+            { value: "eq", label: "=" },
+            { value: "lt", label: "<" },
+            { value: "lte", label: "≤" },
+            { value: "gt", label: ">" },
+            { value: "gte", label: "≥" }
+        ]
+    };
+
+    // Mudar operadores quando o campo mudar
+    document.getElementById('campoFiltro').addEventListener('change', function() {
+        const campo = this.value;
+        const operadores = operadoresPorCampo[campo];
+        const selectOperador = document.getElementById('operadorFiltro');
+        selectOperador.innerHTML = '';
+        operadores.forEach(op => {
+            const option = document.createElement('option');
+            option.value = op.value;
+            option.textContent = op.label;
+            selectOperador.appendChild(option);
+        });
+    });
+
+    // Disparar evento inicial
+    document.getElementById('campoFiltro').dispatchEvent(new Event('change'));
+
+    let filtrosCount = 0;
+
+    // Adicionar filtro
+    document.getElementById('btnAdicionarFiltro').addEventListener('click', function() {
+        const campo = document.getElementById('campoFiltro').value;
+        const operador = document.getElementById('operadorFiltro').value;
+        const valor = document.getElementById('valorFiltro').value;
+
+        if (!valor || valor.trim() === '') {
+            alert('Digite um valor para filtrar');
+            return;
+        }
+
+        const campoLabel = document.querySelector(`#campoFiltro option[value="${campo}"]`).textContent;
+        const operadorLabel = document.querySelector(`#operadorFiltro option[value="${operador}"]`).textContent;
+
+        const filtrosDiv = document.getElementById('filtrosAplicados');
+        const filtroId = filtrosCount++;
+
+        const filtroHtml = `
+            <div class="badge bg-secondary bg-opacity-25 text-dark rounded-pill p-2 me-2 mb-2" data-filtro-id="${filtroId}">
+                <input type="hidden" name="campo_${filtroId}" value="${campo}">
+                <input type="hidden" name="operador_${filtroId}" value="${operador}">
+                <input type="hidden" name="valor_${filtroId}" value="${valor}">
+                <span><strong>${campoLabel}</strong></span>
+                <span class="mx-1">${operadorLabel}</span>
+                <span>${valor}</span>
+                <i class="bi bi-x-circle-fill ms-1 text-danger" style="cursor: pointer;" onclick="removerFiltro(this)"></i>
+            </div>
+        `;
+
+        filtrosDiv.insertAdjacentHTML('beforeend', filtroHtml);
+        document.getElementById('valorFiltro').value = '';
+    });
+
+    function removerFiltro(elemento) {
+        const badge = elemento.closest('.badge');
+        badge.remove();
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+</body>
+</html>

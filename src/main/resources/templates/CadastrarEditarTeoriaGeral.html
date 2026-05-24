@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${acao == 'nova'} ? 'Nova Teoria - Song System' : 'Editar Teoria - Song System'">Teoria - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- TinyMCE Editor -->
+    <script src="https://cdn.tiny.cloud/1/seu-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card-form {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .preview-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            transition: all 0.3s ease;
+        }
+        .color-option {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: transform 0.2s ease;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.selected {
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #0d6efd;
+        }
+        .icon-option {
+            font-size: 1.5rem;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .icon-option:hover {
+            background-color: #e9ecef;
+            transform: scale(1.1);
+        }
+        .icon-option.selected {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .badge-example {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .requerido:after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">Song System - Teoria Musical</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a th:href="@{/logout}" class="btn btn-outline-light">Sair</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white active">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <div class="form-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h2 mb-0 text-dark fw-bold">
+                                <i th:if="${acao == 'nova'}" class="bi bi-folder2-open me-2"></i>
+                                <i th:unless="${acao == 'nova'}" class="bi bi-folder2-open me-2"></i>
+                                <span th:text="${acao == 'nova'} ? 'Nova Teoria' : 'Editar Teoria'"></span>
+                            </h1>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mt-2 mb-0">
+                                    <li class="breadcrumb-item"><a th:href="@{/inicio}">Início</a></li>
+                                    <li class="breadcrumb-item"><a th:href="@{/teoria}">Teoria</a></li>
+                                    <li class="breadcrumb-item"><a th:href="@{/teoria/geral}">Teorias Gerais</a></li>
+                                    <li class="breadcrumb-item active" th:text="${acao == 'nova'} ? 'Nova' : 'Editar'"></li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <a th:href="@{/teoria/geral}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+
+                    <div class="card card-form">
+                        <div class="card-body p-4">
+                            <form th:action="${acao == 'nova'} ? @{/teoria/geral/salvar} : @{/teoria/geral/atualizar/{id}(id=${teoriaDTO.id})}"
+                                  th:object="${teoriaDTO}"
+                                  method="post"
+                                  id="formTeoria">
+
+                                <!-- Informações Básicas -->
+                                <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Informações Básicas</h5>
+                                <hr class="mb-4">
+
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <label class="form-label requeridofw-bold">Título</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               th:field="*{titulo}"
+                                               required
+                                               placeholder="Ex: Círculo das Quintas">
+                                        <div class="text-danger" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}"></div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label requeridofw-bold">Categoria</label>
+                                        <select class="form-select" th:field="*{categoria}" required>
+                                            <option value="">Selecione...</option>
+                                            <option value="Teoria Básica">Teoria Básica</option>
+                                            <option value="Harmonia">Harmonia</option>
+                                            <option value="Melodia">Melodia</option>
+                                            <option value="Ritmo">Ritmo</option>
+                                            <option value="Leitura Musical">Leitura Musical</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Descrição Curta</label>
+                                    <textarea class="form-control"
+                                              th:field="*{descricao}"
+                                              rows="2"
+                                              placeholder="Breve descrição da teoria (aparece nos cards)"></textarea>
+                                </div>
+
+                                <!-- Personalização Visual -->
+                                <h5 class="mb-3 mt-4"><i class="bi bi-palette me-2"></i>Personalização Visual</h5>
+                                <hr class="mb-4">
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Ícone</label>
+                                        <div class="border rounded p-3">
+                                            <div class="row g-2">
+                                                <div class="col-3" th:each="icon : ${iconesDisponiveis}">
+                                                    <div class="icon-option text-center"
+                                                         th:classappend="${teoriaDTO.icone == icon ? 'selected' : ''}"
+                                                         data-icon="${icon}">
+                                                        <i class="bi fs-2" th:class="'bi ' + ${icon}"></i>
+                                                        <small class="d-block mt-1" th:text="${icon}"></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" th:field="*{icone}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Cor do Ícone</label>
+                                        <div class="border rounded p-3">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <div th:each="cor : ${coresDisponiveis}"
+                                                     class="color-option"
+                                                     th:style="'background-color: ' + ${cor.valor} + ';'"
+                                                     th:classappend="${teoriaDTO.corIcone == cor.nome ? 'selected' : ''}"
+                                                     data-cor="${cor.nome}">
+                                                </div>
+                                            </div>
+                                            <input type="hidden" th:field="*{corIcone}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Cor do Badge</label>
+                                        <select class="form-select" th:field="*{tipoBadge}">
+                                            <option value="primary">Azul (Primary)</option>
+                                            <option value="success">Verde (Success)</option>
+                                            <option value="danger">Vermelho (Danger)</option>
+                                            <option value="warning">Amarelo (Warning)</option>
+                                            <option value="info">Azul Claro (Info)</option>
+                                            <option value="dark">Preto (Dark)</option>
+                                            <option value="secondary">Cinza (Secondary)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Ordem de Exibição</label>
+                                        <input type="number"
+                                               class="form-control"
+                                               th:field="*{ordemExibicao}"
+                                               placeholder="Número menor aparece primeiro">
+                                    </div>
+                                </div>
+
+                                <!-- Preview ao vivo -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Preview do Card</label>
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="card bg-white" style="max-width: 300px; margin: 0 auto;">
+                                            <div class="card-body text-center">
+                                                <div class="preview-icon" id="previewIcon">
+                                                    <i class="bi fs-1" id="previewIcone"></i>
+                                                </div>
+                                                <h5 id="previewTitulo" class="fw-bold">Título da Teoria</h5>
+                                                <p id="previewDescricao" class="text-muted small">Descrição da teoria</p>
+                                                <span id="previewBadge" class="badge">Categoria</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Conteúdo -->
+                                <h5 class="mb-3 mt-4"><i class="bi bi-file-text me-2"></i>Conteúdo da Teoria</h5>
+                                <hr class="mb-4">
+
+                                <div class="mb-3">
+                                    <label class="form-label requeridofw-bold">Conteúdo (HTML)</label>
+                                    <textarea id="conteudoEditor" th:field="*{conteudo}" rows="15" class="form-control"></textarea>
+                                </div>
+
+                                <!-- URL do Recurso (opcional) -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">URL do Recurso</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           th:field="*{urlRecurso}"
+                                           placeholder="Ex: /teoria/geral/circulo-quintas">
+                                    <small class="text-muted">URL personalizada para acesso direto (opcional)</small>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" th:field="*{ativo}">
+                                    <label class="form-check-label fw-bold">Teoria Ativa</label>
+                                    <div class="text-muted small">Teorias inativas não aparecem na listagem pública</div>
+                                </div>
+
+                                <hr class="my-4">
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a th:href="@{/teoria/geral}" class="btn btn-secondary">Cancelar</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-2"></i>
+                                        <span th:text="${acao == 'nova'} ? 'Salvar Teoria' : 'Atualizar Teoria'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Ícones disponíveis (Bootstrap Icons)
+    const iconesDisponiveis = ['bi-circle', 'bi-arrow-left-right', 'bi-file-music', 'bi-shield',
+                               'bi-grid-3x3-gap-fill', 'bi-music-note-list', 'bi-diagram-3',
+                               'bi-pentagon', 'bi-star', 'bi-heart', 'bi-music-note-beamed'];
+
+    // Cores disponíveis
+    const coresDisponiveis = {
+        'primary': '#0d6efd',
+        'success': '#198754',
+        'danger': '#dc3545',
+        'warning': '#ffc107',
+        'info': '#0dcaf0',
+        'dark': '#212529',
+        'secondary': '#6c757d'
+    };
+
+    // Inicializar TinyMCE
+    tinymce.init({
+        selector: '#conteudoEditor',
+        height: 400,
+        menubar: true,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic backcolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help',
+        language: 'pt_BR',
+        language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@1.0.3/langs/pt_BR.js'
+    });
+
+    // Seleção de ícone
+    document.querySelectorAll('.icon-option').forEach(icon => {
+        icon.addEventListener('click', function() {
+            document.querySelectorAll('.icon-option').forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            const iconName = this.dataset.icon;
+            document.querySelector('[name="icone"]').value = iconName;
+            atualizarPreview();
+        });
+    });
+
+    // Seleção de cor
+    document.querySelectorAll('.color-option').forEach(color => {
+        color.addEventListener('click', function() {
+            document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            const corNome = this.dataset.cor;
+            document.querySelector('[name="corIcone"]').value = corNome;
+            atualizarPreview();
+        });
+    });
+
+    // Atualizar preview ao vivo
+    function atualizarPreview() {
+        const titulo = document.querySelector('[name="titulo"]').value || 'Título da Teoria';
+        const descricao = document.querySelector('[name="descricao"]').value || 'Descrição da teoria';
+        const icone = document.querySelector('[name="icone"]').value || 'bi-book';
+        const corIcone = document.querySelector('[name="corIcone"]').value || 'primary';
+        const tipoBadge = document.querySelector('[name="tipoBadge"]').value || 'primary';
+        const categoria = document.querySelector('[name="categoria"]').value || 'Categoria';
+
+        document.getElementById('previewTitulo').innerText = titulo;
+        document.getElementById('previewDescricao').innerText = descricao;
+        document.getElementById('previewIcone').className = `bi ${icone} fs-1 text-${corIcone}`;
+        document.getElementById('previewBadge').innerHTML = categoria;
+        document.getElementById('previewBadge').className = `badge bg-${tipoBadge}`;
+
+        const previewDiv = document.getElementById('previewIcon');
+        previewDiv.className = `preview-icon bg-${corIcone} bg-opacity-10`;
+    }
+
+    // Listeners para campos que atualizam preview
+    document.querySelector('[name="titulo"]').addEventListener('input', atualizarPreview);
+    document.querySelector('[name="descricao"]').addEventListener('input', atualizarPreview);
+    document.querySelector('[name="categoria"]').addEventListener('change', atualizarPreview);
+    document.querySelector('[name="tipoBadge"]').addEventListener('change', atualizarPreview);
+
+    // Inicializar preview
+    atualizarPreview();
+
+    // Validação do formulário
+    document.getElementById('formTeoria').addEventListener('submit', function(e) {
+        const titulo = document.querySelector('[name="titulo"]').value.trim();
+        const conteudo = tinymce.get('conteudoEditor').getContent().trim();
+
+        if (!titulo) {
+            e.preventDefault();
+            alert('Por favor, informe o título da teoria.');
+            return false;
+        }
+
+        if (!conteudo || conteudo === '<p><br></p>') {
+            e.preventDefault();
+            alert('Por favor, informe o conteúdo da teoria.');
+            return false;
+        }
+    });
+</script>
+
+</body>
+</html>

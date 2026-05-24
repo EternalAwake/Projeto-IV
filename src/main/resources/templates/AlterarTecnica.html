@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Técnica - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+        }
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .section-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .section-divider span {
+            padding: 0 1rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">Song System - Técnicas Musicais</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a th:href="@{/logout}" class="btn btn-outline-light">Sair</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white active">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-0 text-dark fw-bold">
+                            <i class="bi bi-hand-index-thumb me-2"></i>Editar Técnica
+                        </h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mt-2 mb-0">
+                                <li class="breadcrumb-item"><a th:href="@{/inicio}">Início</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/tecnicas}">Técnicas</a></li>
+                                <li class="breadcrumb-item"><a th:href="@{/tecnicas/{id}(id=${tecnica.id})}" th:text="${tecnica.nome}">Técnica</a></li>
+                                <li class="breadcrumb-item active">Editar</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <span th:text="${mensagem}"></span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <span th:text="${erro}"></span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <form th:action="@{/tecnicas/atualizar}"
+                              th:object="${tecnica}"
+                              method="post"
+                              class="needs-validation"
+                              novalidate>
+
+                            <!-- CAMPO HIDDEN COM O ID -->
+                            <input type="hidden" th:field="*{id}">
+
+                            <div class="section-divider">
+                                <span>INFORMAÇÕES BÁSICAS</span>
+                            </div>
+
+                            <div class="row g-4">
+                                <!-- Nome da Técnica -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium">
+                                        Nome da Técnica <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-music-note text-primary"></i>
+                                        </span>
+                                        <input type="text" th:field="*{nome}" class="form-control border-start-0 rounded-3-end"
+                                               placeholder="Ex: Hammer-on, Bend, Sweep Picking" required>
+                                        <div class="invalid-feedback">Por favor, insira o nome da técnica.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Categoria -->
+                                <div class="col-md-3">
+                                    <label class="form-label fw-medium">
+                                        Categoria <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-tag text-primary"></i>
+                                        </span>
+                                        <select th:field="*{categoria}" class="form-select border-start-0 rounded-3-end" required>
+                                            <option value="">Selecione a categoria...</option>
+                                            <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat}"></option>
+                                        </select>
+                                        <div class="invalid-feedback">Selecione uma categoria.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Nível -->
+                                <div class="col-md-3">
+                                    <label class="form-label fw-medium">
+                                        Nível <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-bar-chart-steps text-primary"></i>
+                                        </span>
+                                        <select th:field="*{nivel}" class="form-select border-start-0 rounded-3-end" required>
+                                            <option value="">Selecione o nível...</option>
+                                            <option th:each="n : ${niveis}" th:value="${n}" th:text="${n == 'INICIANTE' ? 'Iniciante' : (n == 'INTERMEDIARIO' ? 'Intermediário' : 'Avançado')}"></option>
+                                        </select>
+                                        <div class="invalid-feedback">Selecione o nível da técnica.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Descrição -->
+                                <div class="col-12">
+                                    <label class="form-label fw-medium">Descrição</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-chat-text text-primary"></i>
+                                        </span>
+                                        <textarea th:field="*{descricao}" class="form-control border-start-0 rounded-3-end" rows="3"
+                                                  placeholder="Descreva o que é esta técnica, sua importância e características..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <span>COMO FAZER</span>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-medium">Passo a Passo</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-list-ol text-primary"></i>
+                                        </span>
+                                        <textarea th:field="*{comoFazer}" class="form-control border-start-0 rounded-3-end" rows="5"
+                                                  placeholder="1. Primeiro passo...\n2. Segundo passo...\n3. Terceiro passo..."></textarea>
+                                    </div>
+                                    <div class="form-text text-muted small mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>Digite cada passo em uma nova linha
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <span>DICAS E EXERCÍCIOS</span>
+                            </div>
+
+                            <div class="row g-4">
+                                <!-- Dicas -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium">Dicas</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-lightbulb text-warning"></i>
+                                        </span>
+                                        <textarea th:field="*{dicas}" class="form-control border-start-0 rounded-3-end" rows="4"
+                                                  placeholder="• Dica 1\n• Dica 2\n• Dica 3"></textarea>
+                                    </div>
+                                    <div class="form-text text-muted small mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>Cada dica em uma nova linha
+                                    </div>
+                                </div>
+
+                                <!-- Exercícios -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium">Exercícios</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-bar-chart-steps text-success"></i>
+                                        </span>
+                                        <textarea th:field="*{exercicios}" class="form-control border-start-0 rounded-3-end" rows="4"
+                                                  placeholder="Exercício 1: ...\nExercício 2: ...\nExercício 3: ..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <span>EXEMPLOS E MÍDIA</span>
+                            </div>
+
+                            <div class="row g-4">
+                                <!-- Músicas Exemplo -->
+                                <div class="col-12">
+                                    <label class="form-label fw-medium">Músicas que usam esta técnica</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-music-note-beamed text-primary"></i>
+                                        </span>
+                                        <textarea th:field="*{musicasExemplo}" class="form-control border-start-0 rounded-3-end" rows="3"
+                                                  placeholder="Ex: Stairway to Heaven - Led Zeppelin\nEx: Eruption - Van Halen"></textarea>
+                                    </div>
+                                    <div class="form-text text-muted small mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>Cada música em uma nova linha
+                                    </div>
+                                </div>
+
+                                <!-- URL do Vídeo -->
+                                <div class="col-12">
+                                    <label class="form-label fw-medium">URL do Vídeo (YouTube)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-youtube text-danger"></i>
+                                        </span>
+                                        <input type="text" th:field="*{videoUrl}" class="form-control border-start-0 rounded-3-end"
+                                               placeholder="https://www.youtube.com/watch?v=...">
+                                    </div>
+                                    <div class="form-text text-muted small mt-1">
+                                        <i class="bi bi-info-circle me-1"></i>Cole o link completo do vídeo do YouTube
+                                    </div>
+                                </div>
+
+                                <!-- URL da Imagem -->
+                                <div class="col-12">
+                                    <label class="form-label fw-medium">URL da Imagem</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 rounded-3-start">
+                                            <i class="bi bi-image text-primary"></i>
+                                        </span>
+                                        <input type="text" th:field="*{imagem}" class="form-control border-start-0 rounded-3-end"
+                                               placeholder="https://...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BOTÕES DE AÇÃO -->
+                            <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                                <a th:href="@{/tecnicas/{id}(id=${tecnica.id})}" class="btn btn-outline-secondary rounded-3 px-4 py-2">
+                                    <i class="bi bi-x-lg me-2"></i>Cancelar
+                                </a>
+                                <div class="d-flex gap-2">
+                                    <button type="reset" class="btn btn-outline-primary rounded-3 px-4 py-2">
+                                        <i class="bi bi-eraser me-2"></i>Limpar
+                                    </button>
+                                    <button type="submit" class="btn btn-primary rounded-3 px-5 py-2 shadow-sm">
+                                        <i class="bi bi-check-lg me-2"></i>Salvar Alterações
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Validação do formulário
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+</script>
+
+</body>
+</html>

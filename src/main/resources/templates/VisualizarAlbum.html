@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${album.albumNome} + ' - Song System'">Visualizar Álbum - Song System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-layout {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background-color: #f8f9fa;
+        }
+        /* Estilos da Sidebar */
+        .sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Estilos básicos para o menu */
+        .sidebar .nav-link {
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.625rem 1rem;
+            margin-bottom: 0.25rem;
+            color: #e9ecef !important;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #0d6efd !important; /* Azul padrão do Bootstrap */
+            color: white !important;
+            box-shadow: none;
+        }
+
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .border-secondary {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Scrollbar personalizada (opcional) */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            background: white !important;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            color: #667eea;
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            background-color: transparent;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .table th {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            .table {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- 1. HEADER (TOPO) -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" href="#">
+                Song System - Repertório e Estudo Musical
+            </a>
+
+            <!-- Link de Logout à direita -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a th:href="@{/logout}" class="btn btn-outline-light d-flex align-items-center" title="Sair do Sistema">
+                        <i class="bi bi-box-arrow-right me-2 ms-2 d-none d-lg-inline"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white active">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/configuracoes}" class="nav-link text-white">
+                        <i class="bi bi-gear-fill me-2"></i> Configurações
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+
+                <!-- Cabeçalho da página -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div>
+                                <h1 class="h2 mb-0 text-dark fw-bold">
+                                    <i class="bi bi-disc-fill me-2"></i>
+                                    <span th:text="${album.albumNome}"></span>
+                                </h1>
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mt-2 mb-0">
+                                        <li class="breadcrumb-item"><a th:href="@{/inicio}" class="text-decoration-none text-primary">Início</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca}" class="text-decoration-none text-primary">Biblioteca</a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/albuns}" class="text-decoration-none text-primary">Álbuns</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page" th:text="${album.albumNome}">The Dark Side of the Moon</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 mt-md-0 d-flex gap-2">
+                        <a th:href="@{/biblioteca/albuns/visualizar/alteraralbum/{id}(id=${album.albumId})}" class="btn btn-primary rounded-3 shadow-sm">
+                            <i class="bi bi-pencil me-2"></i>Alterar Álbum
+                        </a>
+                        <button class="btn btn-outline-danger rounded-3 excluir-album"
+                                th:data-album-id="${album.albumId}"
+                                th:data-album-nome="${album.albumNome}">
+                            <i class="bi bi-trash me-2"></i>Excluir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CAPA E INFORMAÇÕES PRINCIPAIS -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-white rounded-4 shadow-sm h-100">
+                            <div class="card-body p-4 text-center">
+                                <!-- Capa do álbum com fallback para ícone -->
+                                <div style="width: 100%; aspect-ratio: 1/1; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 20px 30px -10px rgba(0,0,0,0.3); overflow: hidden;">
+
+                                    <!-- Se tem imagem, mostra a imagem -->
+                                    <img th:if="${album.albumImagem != null}"
+                                         th:src="@{${album.albumImagem}}"
+                                         style="width: 100%; height: 100%; object-fit: cover;"
+                                         alt="Capa do álbum">
+
+                                    <!-- Se não tem imagem, mostra ícone de disco -->
+                                    <div th:if="${album.albumImagem == null}" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <i class="bi bi-disc-fill text-secundary" style="font-size: 5rem;"></i>
+                                        <span class="text-secundary mt-2 small" style="opacity: 0.8;">Sem capa</span>
+                                    </div>
+                                </div>
+
+                                <h2 class="fw-bold mb-2" th:text="${album.albumNome}">The Dark Side of the Moon</h2>
+
+                                <p class="mb-3">
+                                    <a th:href="@{/biblioteca/bandas/visualizar/{id}(id=${album.bandaDTO.bandaId})}" class="text-decoration-none text-primary fw-medium">
+                                        <i class="bi bi-people-fill me-1"></i><span th:text="${album.bandaDTO != null ? album.bandaDTO.bandaNome : '—'}">Pink Floyd</span>
+                                    </a>
+                                </p>
+
+                                <div class="row g-2 mb-4">
+                                    <div class="col-6">
+                                        <div class="bg-light rounded-4 p-3">
+                                            <i class="bi bi-calendar3 fs-4 text-primary d-block mb-2"></i>
+                                            <span class="fw-bold fs-5 d-block" th:text="${album.albumAnoLancamento}">1973</span>
+                                            <span class="small text-muted">Lançamento</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-light rounded-4 p-3">
+                                            <i class="bi bi-clock fs-4 text-primary d-block mb-2"></i>
+                                            <span class="fw-bold fs-5 d-block" th:text="${album.albumDuracao != null ? album.albumDuracao : '—'}">43:00</span>
+                                            <span class="small text-muted">Duração</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="card border-0 bg-white rounded-4 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <h5 class="fw-bold mb-3">
+                                            <i class="bi bi-info-circle me-2 text-primary"></i>Sobre o Álbum
+                                        </h5>
+                                        <p class="text-muted mb-4" style="line-height: 1.8;" th:text="${album.albumObservacoes != null ? album.albumObservacoes : 'Nenhuma informação adicional cadastrada para este álbum.'}">
+                                            Informações sobre o álbum...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD BRANCO PARA AS MÚSICAS (mesmo padrão da banda) -->
+                <div class="card border-0 bg-white rounded-4 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <ul class="nav nav-tabs card-header-tabs" id="albumDetailTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active px-4 py-2 fw-semibold" id="musicas-tab" data-bs-toggle="tab" data-bs-target="#musicas" type="button" role="tab">
+                                    <i class="bi bi-music-note-list me-2 text-primary"></i>Músicas
+                                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2" th:text="${album.musicasDto != null ? album.musicasDto.size() : 0}">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="tab-content" id="albumDetailTabContent">
+                            <div class="tab-pane fade show active" id="musicas" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h6 class="fw-bold mb-0">
+                                        <i class="bi bi-disc-fill me-2 text-primary"></i>Faixas do Álbum
+                                    </h6>
+                                    <a th:href="@{/biblioteca/albuns/visualizar/cadastrarmusica/{id}(id=${album.albumId})}"
+                                       class="btn btn-sm btn-outline-primary rounded-3">
+                                        <i class="bi bi-plus-circle me-1"></i>Adicionar música
+                                    </a>
+                                </div>
+
+                                <!-- Mensagem quando não há músicas -->
+                                <div th:if="${album.musicasDto == null or album.musicasDto.isEmpty()}" class="text-center py-5">
+                                    <i class="bi bi-music-note-beamed fs-1 text-muted d-block mb-3"></i>
+                                    <p class="text-muted">Nenhuma música cadastrada para este álbum.</p>
+                                </div>
+
+                                <!-- Lista de músicas -->
+                                <div class="table-responsive" th:if="${album.musicasDto != null and !album.musicasDto.isEmpty()}">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-3 py-3 border-0 rounded-start-4" style="width: 50px;">#</th>
+                                            <th class="py-3 border-0">Música</th>
+                                            <th class="py-3 border-0">Tom</th>
+                                            <th class="py-3 border-0 text-center">Duração</th>
+                                            <th class="py-3 border-0 text-end pe-3 rounded-end-4">Ações</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="musica, iterStat : ${album.musicasDto}">
+                                            <td class="ps-3 fw-medium" th:text="${iterStat.count}">1</td>
+                                            <td th:text="${musica.musicaNome}">Nome da Música</td>
+                                            <td>
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3"
+                                                          th:text="${musica.musicaTom != null ? musica.musicaTom : '—'}">C</span>
+                                            </td>
+                                            <td class="text-center" th:text="${musica.musicaDuracao != null ? musica.musicaDuracao : '—'}">4:20</td>
+                                            <td class="text-end pe-3">
+                                                <a th:href="@{/biblioteca/albuns/visualizar/alterarmusica/{id}(id=${musica.musicaId})}"
+                                                   class="btn btn-sm btn-outline-primary rounded-3 me-1" title="Alterar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a th:href="@{/biblioteca/albuns/visualizar/visualizarmusica/{id}(id=${musica.musicaId})}"
+                                                   class="btn btn-sm btn-outline-secondary rounded-3 me-1" title="Ver detalhes">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-danger rounded-3 excluir-musica"
+                                                        title="Excluir"
+                                                        th:data-musica-id="${musica.musicaId}"
+                                                        th:data-musica-nome="${musica.musicaNome}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/excluirAlbumView.js}"></script>
+<script>
+    function atualizarContadoresMusicasAlbum() {
+        // 1. Atualizar badge da tab Músicas
+        const badge = document.querySelector('#musicas-tab .badge');
+        if (badge) {
+            const currentCount = parseInt(badge.textContent);
+            if (!isNaN(currentCount)) {
+                badge.textContent = currentCount - 1;
+            }
+        }
+
+        // 2. Atualizar o contador "Músicas:" no card lateral
+        const faixasElement = document.querySelector('.text-start .d-flex.align-items-center');
+        if (faixasElement) {
+            const numberSpan = faixasElement.querySelector('span span:last-child');
+            if (numberSpan) {
+                const currentCount = parseInt(numberSpan.textContent);
+                if (!isNaN(currentCount)) {
+                    numberSpan.textContent = currentCount - 1;
+                }
+            }
+        }
+
+        // 3. Atualizar o contador no grid de informações rápidas
+        const infoGrid = document.querySelector('.row.g-2.mb-4');
+        if (infoGrid) {
+            const faixasDiv = infoGrid.querySelector('.col-6:first-child .fw-bold.fs-5');
+            if (faixasDiv) {
+                const currentCount = parseInt(faixasDiv.textContent);
+                if (!isNaN(currentCount)) {
+                    faixasDiv.textContent = currentCount - 1;
+                }
+            }
+        }
+    }
+
+    document.querySelectorAll('.excluir-musica').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const musicaNome = this.dataset.musicaNome || 'esta música';
+            const musicaId = this.dataset.musicaId;
+            const row = this.closest('tr');
+
+            if (confirm(`Confirma a exclusão da música "${musicaNome}"?`)) {
+                fetch(`/biblioteca/musicas/visualizar/excluir/${musicaId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        if (row) {
+                            row.remove();
+                        }
+
+                        atualizarContadoresMusicasAlbum();
+
+                        // Verificar se a tabela ficou vazia
+                        const remainingRows = document.querySelectorAll('#musicas tbody tr:not(.text-center)').length;
+                        if (remainingRows === 0) {
+                            const tbody = document.querySelector('#musicas tbody');
+                            if (tbody) {
+                                const albumId = document.querySelector('.excluir-album')?.dataset.albumId || '';
+                                tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <i class="bi bi-music-note-beamed fs-1 text-muted d-block mb-3"></i>
+                                            <p class="text-muted">Nenhuma música cadastrada para este álbum.</p>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                        }
+
+                        alert('Música excluída com sucesso!');
+                    } else {
+                        alert('Erro ao excluir música. Tente novamente.');
+                    }
+                })
+                .catch(error => {
+                    alert('Erro de rede ao excluir música.');
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>
