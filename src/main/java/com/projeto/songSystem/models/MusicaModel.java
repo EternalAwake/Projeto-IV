@@ -3,6 +3,8 @@ package com.projeto.songSystem.models;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Musica")
@@ -44,6 +46,9 @@ public class MusicaModel {
     @ManyToOne
     @JoinColumn(name = "album_id", nullable = true)
     private AlbumModel album;
+
+    @OneToMany(mappedBy = "musica", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<RepertorioItemModel> repertorioItens = new ArrayList<>();
 
     public Long getMusicaId() {
         return musicaId;
