@@ -69,7 +69,7 @@ public class RepertorioController {
         model.addAttribute("statusList", StatusRepertorio.values());
         model.addAttribute("dificuldadeList", Dificuldade.values());
 
-        return "repertorio";
+        return "Repertorio";
     }
 
     /**

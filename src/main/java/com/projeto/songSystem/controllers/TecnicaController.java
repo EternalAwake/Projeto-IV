@@ -64,7 +64,7 @@ public class TecnicaController {
         } catch (Exception e) {
             attributes.addFlashAttribute("erro", "Erro ao salvar técnica: " + e.getMessage());
         }
-        return "redirect:/Tecnicas";
+        return "redirect:/tecnicas";
     }
 
     @GetMapping("/editar/{id}")
@@ -85,7 +85,7 @@ public class TecnicaController {
         } catch (Exception e) {
             attributes.addFlashAttribute("erro", "Erro ao atualizar técnica: " + e.getMessage());
         }
-        return "redirect:/Tecnicas";
+        return "redirect:/tecnicas";
     }
 
     @DeleteMapping("/excluir/{id}")
