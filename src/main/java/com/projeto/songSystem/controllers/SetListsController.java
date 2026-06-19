@@ -22,17 +22,25 @@ public class SetListsController {
 
     // Listar todos os setlists do usuário
     @GetMapping("/repertorio/setlists")
-    public String listarSetlists(Model model, HttpSession session) {
+    public String listarSetlists(
+            @RequestParam(required = false) String busca,
+            @RequestParam(required = false) String quantidade,
+            @RequestParam(defaultValue = "nome") String ordem,
+            Model model,
+            HttpSession session
+    ) {
         UsuarioDTO usuario = (UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuario == null) return "redirect:/login";
 
-        System.out.println("Usuário logado: " + usuario.getUsername() + " (ID: " + usuario.getId() + ")");
-
-        List<SetlistDTO> setlists = setlistService.listarSetlistsPorUsuario(usuario.getId());
+        List<SetlistDTO> setlists = setlistService.filtrarSetlists(usuario.getId(), busca, quantidade, ordem);
         model.addAttribute("setlists", setlists);
+
+        model.addAttribute("buscaAtual", busca);
+        model.addAttribute("quantidadeSelecionada", quantidade);
+        model.addAttribute("ordemSelecionada", ordem);
+
         return "setlists";
     }
-
     // Página de criação (modal já resolve)
     @PostMapping("/repertorio/setlists/criar")
     public String criarSetlist(@RequestParam String nome,
@@ -68,7 +76,7 @@ public class SetListsController {
             return "visualizarSetlist";
         } catch (Exception e) {
             model.addAttribute("erro", e.getMessage());
-            return "redirect:/repertorio//setlists";
+            return "redirect:/repertorio/setlists";
         }
     }
 

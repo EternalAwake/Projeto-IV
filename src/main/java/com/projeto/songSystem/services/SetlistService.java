@@ -149,6 +149,41 @@ public class SetlistService {
                 .collect(Collectors.toList());
     }
 
+    public List<SetlistDTO> filtrarSetlists(Long usuarioId, String busca, String quantidade, String ordem) {
+        String buscaSanitizada = (busca == null || busca.isEmpty()) ? null : busca.trim().toLowerCase();
+
+        Integer qtdMin = null;
+        Integer qtdMax = null;
+
+        if (quantidade != null && !quantidade.isEmpty()) {
+            switch (quantidade) {
+                case "0" -> { qtdMin = 0; qtdMax = 0; }
+                case "1-5" -> { qtdMin = 1; qtdMax = 5; }
+                case "6-10" -> { qtdMin = 6; qtdMax = 10; }
+                case "11+" -> { qtdMin = 11; qtdMax = null; }
+                default -> {}
+            }
+        }
+
+        String ordemSanitizada = validarOrdem(ordem);
+
+        List<SetlistModel> setlists = setlistRepository.filtrarSetlists(
+                usuarioId, buscaSanitizada, qtdMin, qtdMax, ordemSanitizada
+        );
+
+        return setlists.stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
+    }
+
+    private String validarOrdem(String ordem) {
+        if (ordem == null) return "nome";
+        return switch (ordem) {
+            case "nome", "data", "musicas" -> ordem;
+            default -> "nome";
+        };
+    }
+
     private SetlistDTO converterParaDTO(SetlistModel setlist) {
         SetlistDTO dto = new SetlistDTO();
         dto.setId(setlist.getId());
