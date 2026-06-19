@@ -9,13 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping()
+@RequestMapping("/biblioteca/albuns")
 public class AlbunsController {
 
     @Autowired
@@ -27,19 +24,29 @@ public class AlbunsController {
     @Autowired
     private MusicaService musicaService;
 
-    @GetMapping("/biblioteca/albuns")
-    public String listarAlbuns(Model model) {
-
-        model.addAttribute("albuns", albumService.listarAlbuns());
+    @GetMapping
+    public String listarAlbuns(
+            @RequestParam(required = false) String bandaId,
+            @RequestParam(required = false) String ano,
+            @RequestParam(required = false) String busca,
+            Model model
+    ) {
+        model.addAttribute("albuns", albumService.filtrarAlbuns(bandaId, ano, busca));
+        model.addAttribute("todasBandas", bandaService.listarBandas());
+        model.addAttribute("anosDisponiveis", albumService.obterAnosDisponiveis(bandaId));
         model.addAttribute("totalBandas", bandaService.obterQtdBandas());
         model.addAttribute("totalMusicas", musicaService.obterQtdMusicas());
         model.addAttribute("totalAlbuns", albumService.obterQtdAlbuns());
 
-        return "albuns";
+        // Mantém os filtros selecionados após o submit
+        model.addAttribute("bandaIdSelecionada", bandaId);
+        model.addAttribute("anoSelecionado", ano);
+        model.addAttribute("buscaAtual", busca);
 
+        return "albuns";
     }
 
-    @DeleteMapping("/biblioteca/albuns/excluir/{id}")
+    @DeleteMapping("/excluir/{id}")
     public ResponseEntity<String> excluirAlbum(@PathVariable Long id) {
 
         boolean retorno = albumService.excluirAlbum(id);

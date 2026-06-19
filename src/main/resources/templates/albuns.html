@@ -284,23 +284,31 @@
                                     <span class="input-group-text bg-white border-end-0 rounded-3-start">
                                         <i class="bi bi-search"></i>
                                     </span>
-                                    <input type="text" class="form-control border-start-0 rounded-3-end" placeholder="Buscar álbum por nome ou banda...">
+                                    <input id="buscaAlbum" type="text" class="form-control border-start-0 rounded-3-end"
+                                           placeholder="Buscar álbum por nome ou banda..."
+                                           th:value="${buscaAtual}">
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select rounded-3">
+                                <select class="form-select rounded-3" id="bandaFiltro">
                                     <option value="">Todas as bandas</option>
-                                    <option th:each="banda : ${todasBandas}" th:value="${banda.bandaId}" th:text="${banda.bandaNome}"></option>
+                                    <option th:each="banda : ${todasBandas}"
+                                            th:value="${banda.bandaId}"
+                                            th:text="${banda.bandaNome}"
+                                            th:selected="${banda.bandaId.toString() == bandaIdSelecionada}"></option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select rounded-3">
+                                <select class="form-select rounded-3" id="anoFiltro">
                                     <option value="">Todos os anos</option>
-                                    <option th:each="ano : ${anosDisponiveis}" th:value="${ano}" th:text="${ano}"></option>
+                                    <option th:each="ano : ${anosDisponiveis}"
+                                            th:value="${ano}"
+                                            th:text="${ano}"
+                                            th:selected="${ano.toString() == anoSelecionado}"></option>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-outline-primary rounded-3 w-100">
+                                <button class="btn btn-outline-primary rounded-3 w-100" id="filtrarBtn">
                                     <i class="bi bi-funnel me-2"></i>Filtrar
                                 </button>
                             </div>
@@ -436,6 +444,19 @@
 </div>
 
 <script>
+    document.getElementById('filtrarBtn').addEventListener('click', function() {
+        const busca = document.getElementById('buscaAlbum').value;
+        const bandaId = document.getElementById('bandaFiltro').value;
+        const ano = document.getElementById('anoFiltro').value;
+
+        const params = new URLSearchParams();
+        if (bandaId) params.set('bandaId', bandaId);
+        if (ano) params.set('ano', ano);
+        if (busca) params.set('busca', busca);
+
+        window.location.href = `/biblioteca/albuns?${params.toString()}`;
+    });
+
     // Adicione um ouvinte de eventos aos botões de exclusão
     document.querySelectorAll('.excluir').forEach(function(button) {
         button.addEventListener('click', function(event) {

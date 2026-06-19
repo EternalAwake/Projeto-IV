@@ -215,4 +215,17 @@ public class AlbumService {
         return albumRepository.findByBandaBandaId(bandaId);
     }
 
+    public List<AlbumModel> filtrarAlbuns(String bandaId, String ano, String busca) {
+        Long bandaIdSanitizado = (bandaId == null || bandaId.isEmpty()) ? null : Long.parseLong(bandaId.trim());
+        Integer anoSanitizado = (ano == null || ano.isEmpty()) ? null : Integer.parseInt(ano.trim());
+        String buscaSanitizada = (busca == null || busca.isEmpty()) ? null : busca.trim().toLowerCase();
+
+        return albumRepository.filtrarAlbuns(bandaIdSanitizado, anoSanitizado, buscaSanitizada);
+    }
+
+    public List<Integer> obterAnosDisponiveis(String bandaId) {
+        Long bandaIdSanitizado = (bandaId == null || bandaId.isEmpty()) ? null : Long.parseLong(bandaId.trim());
+        return albumRepository.obterAnosDisponiveis(bandaIdSanitizado);
+    }
+
 }
