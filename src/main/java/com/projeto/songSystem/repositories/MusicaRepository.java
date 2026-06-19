@@ -17,4 +17,16 @@ public interface MusicaRepository extends JpaRepository<MusicaModel, Long> {
     @Query("SELECT m FROM MusicaModel m LEFT JOIN FETCH m.banda LEFT JOIN FETCH m.album WHERE m.musicaId = :id")
     Optional<MusicaModel> findByIdWithBandaAndAlbum(@Param("id") Long id);
 
+    @Query("""
+        SELECT m FROM MusicaModel m
+        WHERE (:bandaId IS NULL OR m.banda.bandaId = :bandaId)
+        AND (:tom IS NULL OR m.musicaTom = :tom)
+        AND (:busca IS NULL OR LOWER(m.musicaNome) LIKE CONCAT('%', :busca, '%'))
+        """)
+    List<MusicaModel> filtrarMusicas(
+            @Param("bandaId") Long bandaId,
+            @Param("tom") String tom,
+            @Param("busca") String busca
+    );
+
 }

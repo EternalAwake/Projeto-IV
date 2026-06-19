@@ -192,4 +192,11 @@ public class MusicaService {
         return true;
     }
 
+    public List<MusicaModel> filtrarMusicas(String bandaId, String tom, String busca) {
+        Long bandaIdSanitizado = (bandaId == null || bandaId.isEmpty()) ? null : Long.parseLong(bandaId.trim());
+        String tomSanitizado = (tom == null || tom.isEmpty()) ? null : tom.trim();
+        String buscaSanitizada = (busca == null || busca.isEmpty()) ? null : busca.trim().toLowerCase();
+
+        return musicaRepository.filtrarMusicas(bandaIdSanitizado, tomSanitizado, buscaSanitizada);
+    }
 }
