@@ -2,11 +2,13 @@ package com.projeto.songSystem.services;
 
 import com.projeto.songSystem.dto.AlbumDTO;
 import com.projeto.songSystem.dto.BandaDTO;
+import com.projeto.songSystem.dto.FiltroCustomizadoDTO;
 import com.projeto.songSystem.dto.MusicaDTO;
 import com.projeto.songSystem.models.AlbumModel;
 import com.projeto.songSystem.models.BandaModel;
 import com.projeto.songSystem.models.MusicaModel;
 import com.projeto.songSystem.repositories.BandaRepository;
+import com.projeto.songSystem.specifications.BandaSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -175,6 +177,13 @@ public class BandaService {
 
         bandaRepository.save(optionalBandaModel.get());
         return null;
+    }
+
+    public List<BandaModel> filtrarBandas(List<FiltroCustomizadoDTO> filtros) {
+        if (filtros == null || filtros.isEmpty()) {
+            return bandaRepository.findAll();
+        }
+        return bandaRepository.findAll(BandaSpecification.comFiltros(filtros));
     }
 
     @Value("${app.upload.dir}")
