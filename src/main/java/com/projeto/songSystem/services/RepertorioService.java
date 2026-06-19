@@ -167,6 +167,16 @@ public class RepertorioService {
         return estatisticas;
     }
 
+    public List<RepertorioItemDTO> filtrarItensRepertorio(StatusRepertorio status, Dificuldade dificuldade, String musicaTom, String busca) {
+        String musicaTomSanitizado = (musicaTom == null || musicaTom.isEmpty()) ? null : musicaTom.trim();
+        String buscaSanitizada = (busca == null || busca.isEmpty()) ? null : busca.trim().toLowerCase();
+
+        return repertorioItemRepository.filtrarItemRepertorio(status, dificuldade, musicaTomSanitizado, buscaSanitizada)
+                .stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Converte Model para DTO
      */

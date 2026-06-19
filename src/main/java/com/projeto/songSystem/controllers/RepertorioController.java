@@ -2,10 +2,10 @@ package com.projeto.songSystem.controllers;
 
 import com.projeto.songSystem.dto.RepertorioEstatisticasDTO;
 import com.projeto.songSystem.dto.RepertorioItemDTO;
+import com.projeto.songSystem.dto.TecnicaDTO;
 import com.projeto.songSystem.dto.UsuarioDTO;
 import com.projeto.songSystem.models.MusicaModel;
 import com.projeto.songSystem.models.RepertorioItemModel;
-import com.projeto.songSystem.models.UsuarioModel;
 import com.projeto.songSystem.models.enums.Dificuldade;
 import com.projeto.songSystem.models.enums.StatusRepertorio;
 import com.projeto.songSystem.repositories.MusicaRepository;
@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -242,6 +241,15 @@ public class RepertorioController {
         }
 
         return response;
+    }
+
+    @GetMapping("/filtrar")
+    @ResponseBody
+    public List<RepertorioItemDTO> filtrarItensRepertorio(@RequestParam(required = false) StatusRepertorio status,
+                                                          @RequestParam(required = false) Dificuldade dificuldade,
+                                                          @RequestParam(required = false) String musicaTom,
+                                                          @RequestParam(required = false) String busca) {
+        return repertorioService.filtrarItensRepertorio(status, dificuldade, musicaTom, busca);
     }
 
     // ==================== MÉTODOS AUXILIARES ====================
