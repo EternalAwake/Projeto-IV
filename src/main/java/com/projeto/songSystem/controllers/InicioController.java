@@ -2,10 +2,8 @@ package com.projeto.songSystem.controllers;
 
 /*import com.projeto.songSystem.dto.ConsultaDto;
 import com.projeto.songSystem.dto.DashboardDto;
-import com.projeto.songSystem.models.UsuarioModel;
 import com.projeto.songSystem.services.ConsultaService;*/
 import com.projeto.songSystem.dto.UsuarioDTO;
-import com.projeto.songSystem.models.UsuarioModel;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

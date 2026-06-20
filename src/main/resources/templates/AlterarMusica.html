@@ -189,11 +189,6 @@
                         <i class="bi bi-person-circle me-2"></i> Meu Perfil
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a th:href="@{/configuracoes}" class="nav-link text-white">
-                        <i class="bi bi-gear-fill me-2"></i> Configurações
-                    </a>
-                </li>
             </ul>
         </div>
 
@@ -212,7 +207,7 @@
                                         <li class="breadcrumb-item"><a th:href="@{/inicio}" class="text-decoration-none text-primary">Início</a></li>
                                         <li class="breadcrumb-item"><a th:href="@{/biblioteca}" class="text-decoration-none text-primary">Biblioteca</a></li>
                                         <li class="breadcrumb-item"><a th:href="@{/biblioteca/musicas}" class="text-decoration-none text-primary">Músicas</a></li>
-                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/musicas/visualizarmusica}" class="text-decoration-none text-primary" th:text="${musica.musicaNome}"></a></li>
+                                        <li class="breadcrumb-item"><a th:href="@{/biblioteca/musicas/visualizarmusica/{id}(id=${musica.musicaId})}" class="text-decoration-none text-primary" th:text="${musica.musicaNome}"></a></li>
                                         <li class="breadcrumb-item active" aria-current="page">Alterar Música</li>
                                     </ol>
                                 </nav>

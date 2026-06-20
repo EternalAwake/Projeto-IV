@@ -30,8 +30,6 @@ public class SetlistService {
 
     @Transactional
     public SetlistDTO criarSetlist(String nome, String descricao, Long usuarioId) {
-        System.out.println("=== CRIANDO SETLIST ===");
-        System.out.println("Usuário ID: " + usuarioId);
 
         UsuarioModel usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + usuarioId));
@@ -43,7 +41,6 @@ public class SetlistService {
         setlist.setDataCriacao(LocalDateTime.now());
 
         SetlistModel saved = setlistRepository.save(setlist);
-        System.out.println("Setlist criado com ID: " + saved.getId());
 
         return converterParaDTO(saved);
     }
@@ -115,9 +112,7 @@ public class SetlistService {
     }
 
     public List<SetlistDTO> listarSetlistsPorUsuario(Long usuarioId) {
-        System.out.println("=== LISTANDO SETLISTS DO USUÁRIO: " + usuarioId);
         List<SetlistModel> setlists = setlistRepository.findByUsuarioId(usuarioId);
-        System.out.println("Setlists encontrados: " + setlists.size());
 
         return setlists.stream()
                 .map(this::converterParaDTO)
@@ -128,8 +123,6 @@ public class SetlistService {
         SetlistModel setlist = setlistRepository.findById(setlistId)
                 .orElseThrow(() -> new RuntimeException("Setlist não encontrado com ID: " + setlistId));
 
-        System.out.println("Buscando setlist: " + setlist.getNome());
-        System.out.println("Quantidade de itens: " + setlist.getItens().size());
 
         return converterParaDTO(setlist);
     }
@@ -147,6 +140,22 @@ public class SetlistService {
         return todasDoRepertorio.stream()
                 .filter(item -> !idsNoSetlist.contains(item.getId()))
                 .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Retorna o ID do setlist ao qual pertence um SetlistItem, verificando que
+     * o setlist pertence ao usuário informado (proteção de ownership).
+     */
+    public Long buscarSetlistIdPorItem(Long itemId, Long usuarioId) {
+        SetlistItemModel item = setlistItemRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado com ID: " + itemId));
+
+        SetlistModel setlist = item.getSetlist();
+        if (!setlist.getUsuario().getId().equals(usuarioId)) {
+            throw new RuntimeException("Acesso negado: este item não pertence ao seu setlist.");
+        }
+        return setlist.getId();
     }
 
     private SetlistDTO converterParaDTO(SetlistModel setlist) {

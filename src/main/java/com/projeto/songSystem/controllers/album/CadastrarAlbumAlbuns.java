@@ -30,12 +30,13 @@ public class CadastrarAlbumAlbuns {
     @GetMapping("/biblioteca/albuns/cadastraralbum")
     public String exibirAlbuns(Model model, HttpSession session) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         AlbumDTO albumDTO = new AlbumDTO();
         model.addAttribute("albumDTO", albumDTO);
@@ -52,7 +53,7 @@ public class CadastrarAlbumAlbuns {
             albumService.cadastrarAlbum(albumDTO);
             attributes.addFlashAttribute("mensagem", "Álbum cadastrada com sucesso!");
         } catch (Exception e) {
-            attributes.addFlashAttribute("erro", "Falha ao cadastrar álbum.");
+            attributes.addFlashAttribute("erro", "Falha ao cadastrar álbum: " + e.getMessage());
         }
         return "redirect:/biblioteca/albuns/cadastraralbum";
     }

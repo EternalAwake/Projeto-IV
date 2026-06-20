@@ -7,7 +7,8 @@ import com.projeto.songSystem.models.AlbumModel;
 import com.projeto.songSystem.models.BandaModel;
 import com.projeto.songSystem.models.MusicaModel;
 import com.projeto.songSystem.repositories.BandaRepository;
-import jakarta.transaction.Transactional;
+import com.projeto.songSystem.util.ImageUploadUtil;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +28,9 @@ public class BandaService {
 
     @Autowired
     private BandaRepository bandaRepository;
+
+    @Autowired
+    private MusicaService musicaService;
 
     @Transactional
     public void cadastrarBanda(BandaDTO bandaDTO) throws IOException {
@@ -53,22 +56,12 @@ public class BandaService {
         bandaRepository.save(banda);
     }
 
+    /**
+     * Processa e salva a imagem da banda usando o utilitário central, que valida
+     * tipo/tamanho, redimensiona para a resolução máxima e padroniza o formato.
+     */
     private String salvarImagem(MultipartFile file, String subPasta) throws IOException {
-        // Gerar nome único para o arquivo
-        String nomeOriginal = file.getOriginalFilename();
-        String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
-        String nomeArquivo = UUID.randomUUID().toString() + extensao;
-
-        // Criar diretório se não existir
-        Path caminhoCompleto = Paths.get(uploadDir + subPasta);
-        Files.createDirectories(caminhoCompleto);
-
-        // Salvar arquivo
-        Path caminhoArquivo = caminhoCompleto.resolve(nomeArquivo);
-        Files.copy(file.getInputStream(), caminhoArquivo);
-
-        // Retornar o caminho relativo para salvar no banco
-        return "/uploads/" + subPasta + "/" + nomeArquivo;
+        return ImageUploadUtil.processarESalvar(file, uploadDir, subPasta);
     }
 
     public List<BandaModel> listarBandas() {
@@ -152,28 +145,28 @@ public class BandaService {
 
     @Transactional
     public String alterarBanda(BandaDTO bandaDto) throws IOException {
-        Optional<BandaModel> optionalBandaModel = bandaRepository.findById(bandaDto.getBandaId());
+        BandaModel banda = bandaRepository.findById(bandaDto.getBandaId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Banda não encontrada com ID: " + bandaDto.getBandaId()));
 
-        optionalBandaModel.get().setBandaId(bandaDto.getBandaId());
-        optionalBandaModel.get().setBandaNome(bandaDto.getBandaNome());
+        banda.setBandaNome(bandaDto.getBandaNome());
+        banda.setBandaBiografia(bandaDto.getBandaBiografia());
+        banda.setBandaPais(bandaDto.getBandaPais());
+        banda.setBandaGenero(bandaDto.getBandaGenero());
+        banda.setBandaAnoFormacao(bandaDto.getBandaAnoFormacao());
+        banda.setBandaDestaque(bandaDto.getBandaDestaque() != null
+                ? bandaDto.getBandaDestaque() : false);
+        banda.setBandaDataAtualizacao(LocalDateTime.now());
 
-        optionalBandaModel.get().setBandaImagem(bandaDto.getBandaImagem());
-
-        optionalBandaModel.get().setBandaBiografia(bandaDto.getBandaBiografia());
-        optionalBandaModel.get().setBandaPais(bandaDto.getBandaPais());
-        optionalBandaModel.get().setBandaGenero(bandaDto.getBandaGenero());
-        optionalBandaModel.get().setBandaAnoFormacao(bandaDto.getBandaAnoFormacao());
-        optionalBandaModel.get().setBandaDestaque(bandaDto.getBandaDestaque());
-        optionalBandaModel.get().setBandaDataAtualizacao(LocalDateTime.now());
-
-        // Processar a imagem APENAS se uma nova for enviada
+        // Processar nova imagem APENAS se uma for enviada; caso contrário mantém a atual
         MultipartFile imagem = bandaDto.getBandaAvatar();
         if (imagem != null && !imagem.isEmpty()) {
             String caminhoImagem = salvarImagem(imagem, "bandas");
-            optionalBandaModel.get().setBandaImagem(caminhoImagem);
+            banda.setBandaImagem(caminhoImagem);
         }
+        // Não sobrescreve bandaImagem com o valor do DTO quando não há nova imagem
 
-        bandaRepository.save(optionalBandaModel.get());
+        bandaRepository.save(banda);
         return null;
     }
 
@@ -182,6 +175,30 @@ public class BandaService {
 
     @Transactional
     public boolean excluirBanda(Long id) {
+        // A banda tem cascade ALL sobre álbuns e músicas: ao excluí-la, o Hibernate
+        // apaga em cascata todas as músicas (diretas e dos álbuns). Mas essas músicas
+        // podem estar em itens de repertório/setlist (FK NOT NULL), o que violaria a
+        // integridade referencial. Por isso, limpamos essas dependências antes.
+        BandaModel banda = bandaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Banda não encontrada com ID: " + id));
+
+        // Músicas ligadas diretamente à banda
+        if (banda.getMusicas() != null) {
+            for (MusicaModel m : banda.getMusicas()) {
+                musicaService.removerDependenciasDeMusica(m.getMusicaId());
+            }
+        }
+        // Músicas ligadas aos álbuns da banda
+        if (banda.getAlbuns() != null) {
+            for (AlbumModel album : banda.getAlbuns()) {
+                if (album.getMusicas() != null) {
+                    for (MusicaModel m : album.getMusicas()) {
+                        musicaService.removerDependenciasDeMusica(m.getMusicaId());
+                    }
+                }
+            }
+        }
+
         bandaRepository.deleteById(id);
         return true;
     }
@@ -189,8 +206,10 @@ public class BandaService {
     private void deletarImagem(String caminhoImagem) {
         if (caminhoImagem != null && caminhoImagem.startsWith("/uploads/")) {
             try {
-                String caminhoCompleto = uploadDir + caminhoImagem.replace("/uploads/", "");
-                Path caminho = Paths.get(caminhoCompleto);
+                // Remove o prefixo "/uploads/" e resolve relativo ao diretório base,
+                // de forma consistente com o ImageUploadUtil (que usa Paths.get).
+                String relativo = caminhoImagem.replaceFirst("^/uploads/", "");
+                Path caminho = Paths.get(uploadDir).resolve(relativo).normalize();
                 Files.deleteIfExists(caminho);
             } catch (IOException e) {
                 System.err.println("Erro ao deletar imagem: " + e.getMessage());

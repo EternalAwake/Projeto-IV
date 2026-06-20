@@ -9,6 +9,10 @@ import com.projeto.songSystem.models.MusicaModel;
 import com.projeto.songSystem.repositories.AlbumRepository;
 import com.projeto.songSystem.repositories.BandaRepository;
 import com.projeto.songSystem.repositories.MusicaRepository;
+import com.projeto.songSystem.repositories.RepertorioItemRepository;
+import com.projeto.songSystem.repositories.SetlistItemRepository;
+import com.projeto.songSystem.models.RepertorioItemModel;
+import com.projeto.songSystem.models.SetlistItemModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +33,17 @@ public class MusicaService {
     @Autowired
     private AlbumRepository albumRepository;
 
+    @Autowired
+    private RepertorioItemRepository repertorioItemRepository;
+
+    @Autowired
+    private SetlistItemRepository setlistItemRepository;
+
     public long obterQtdMusicas() {
         return musicaRepository.count();
     }
 
-    public List<MusicaModel> obterMusicasEmDestque() {
+    public List<MusicaModel> obterMusicasEmDestaque() {
         return musicaRepository.findByMusicaDestaqueTrue();
     }
 
@@ -69,7 +79,6 @@ public class MusicaService {
             // Se o usuário não selecionou banda, usa a banda do álbum
             if (bandaId == null || bandaId == 0) {
                 musica.setBanda(album.getBanda());
-                System.out.println("Álbum selecionado, banda associada automaticamente: " + album.getBanda().getBandaNome());
             } else {
                 // Usuário selecionou banda e álbum - verifica se pertencem
                 BandaModel banda = bandaRepository.findById(bandaId)
@@ -97,10 +106,6 @@ public class MusicaService {
         musicaRepository.save(musica);
     }
 
-    // Método para buscar músicas em destaque
-    public List<MusicaModel> obterMusicasEmDestaque() {
-        return musicaRepository.findByMusicaDestaqueTrue();
-    }
 
     public MusicaDTO obterMusicaComDadosCompletos(Long musicaId) {
         Optional<MusicaModel> optionalMusicaModel = musicaRepository.findByIdWithBandaAndAlbum(musicaId);
@@ -183,13 +188,38 @@ public class MusicaService {
         // Salvar alterações
         musicaRepository.save(musica);
 
-        System.out.println("Música alterada com sucesso! ID: " + musica.getMusicaId());
     }
 
     @Transactional
     public boolean excluirMusica(Long id) {
+        removerDependenciasDeMusica(id);
+        // Agora a música pode ser removida sem violar nenhuma FK
         musicaRepository.deleteById(id);
         return true;
+    }
+
+    /**
+     * Remove as dependências de uma música (itens de setlist e de repertório)
+     * sem remover a própria música.
+     *
+     * Útil quando a música será apagada em cascata por outra entidade
+     * (ex.: ao excluir a banda ou o álbum, que têm CascadeType.ALL sobre músicas).
+     * Nesse caso o cascade apaga a música, mas não sabe dos RepertorioItem/SetlistItem,
+     * então é preciso limpar essas dependências antes para não violar as FKs.
+     */
+    @Transactional
+    public void removerDependenciasDeMusica(Long musicaId) {
+        List<RepertorioItemModel> itensRepertorio = repertorioItemRepository.findByMusicaId(musicaId);
+
+        // SetlistItem aponta para RepertorioItem (FK NOT NULL) → remover primeiro
+        for (RepertorioItemModel item : itensRepertorio) {
+            setlistItemRepository.deleteByRepertorioItemId(item.getId());
+        }
+
+        // RepertorioItem aponta para Musica (FK NOT NULL) → remover em seguida
+        if (!itensRepertorio.isEmpty()) {
+            repertorioItemRepository.deleteAll(itensRepertorio);
+        }
     }
 
 }

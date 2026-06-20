@@ -4,6 +4,7 @@ import com.projeto.songSystem.dto.MusicaDTO;
 import com.projeto.songSystem.services.MusicaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,14 @@ public class VisualizarMusicaMusicas {
 
     @GetMapping("/biblioteca/musicas/visualizarmusica/{id}")
     public String visualizarMusica(Model model, @PathVariable Long id, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
 
         // Buscar a música com todos os dados (banda e álbum)
         MusicaDTO musica = musicaService.obterMusicaComDadosCompletos(id);

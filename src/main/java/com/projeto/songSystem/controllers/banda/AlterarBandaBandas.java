@@ -20,12 +20,13 @@ public class AlterarBandaBandas {
     @GetMapping("/biblioteca/bandas/alterarbanda/{id}")
     public String exibirAlterarBanda(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         BandaDTO bandaDTO = bandaService.obterBanda(id);
         model.addAttribute("banda", bandaDTO);
@@ -39,7 +40,7 @@ public class AlterarBandaBandas {
             bandaService.alterarBanda(bandaDTO);
             attributes.addFlashAttribute("mensagem", "Banda alterada com sucesso!");
         }catch (Exception e) {
-            attributes.addFlashAttribute("erro", "Falha ao altrar banda!");
+            attributes.addFlashAttribute("erro", "Falha ao alterar banda: " + e.getMessage());
         }
         return "redirect:/biblioteca/bandas/alterarbanda/" + bandaDTO.getBandaId();
     }

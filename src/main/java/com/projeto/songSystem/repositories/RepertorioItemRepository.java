@@ -12,6 +12,11 @@ public interface RepertorioItemRepository extends JpaRepository<RepertorioItemMo
 
     List<RepertorioItemModel> findByUsuarioId(Long usuarioId);
 
+    // Todos os itens de repertório (de qualquer usuário) que apontam para uma música.
+    // Usado ao excluir uma música, para remover suas dependências antes.
+    @Query("SELECT r FROM RepertorioItemModel r WHERE r.musica.musicaId = :musicaId")
+    List<RepertorioItemModel> findByMusicaId(@Param("musicaId") Long musicaId);
+
     @Query("SELECT r FROM RepertorioItemModel r WHERE r.usuario.id = :usuarioId AND r.musica.musicaId = :musicaId")
     Optional<RepertorioItemModel> findByUsuarioIdAndMusicaId(@Param("usuarioId") Long usuarioId, @Param("musicaId") Long musicaId);
 

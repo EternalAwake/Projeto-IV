@@ -4,6 +4,8 @@ import com.projeto.songSystem.dto.TeoriaCampoHarmonicoDTO;
 import com.projeto.songSystem.services.TeoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,15 @@ public class TeoriaCampoHarmonicoController {
     private TeoriaService teoriaService;
 
     @GetMapping("/teoria/campo-harmonico")
-    public String listarCampos(Model model) {
+    public String listarCampos(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         List<TeoriaCampoHarmonicoDTO> todos = teoriaService.listarTodosCamposHarmonicos();
 
         // Agrupar por tom e contar acordes

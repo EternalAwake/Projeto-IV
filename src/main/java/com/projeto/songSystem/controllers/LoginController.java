@@ -1,12 +1,11 @@
 package com.projeto.songSystem.controllers;
 
-import com.projeto.songSystem.dto.RepertorioEstatisticasDTO;
-import com.projeto.songSystem.dto.RepertorioItemDTO;
 import com.projeto.songSystem.dto.UsuarioDTO;
 import com.projeto.songSystem.models.UsuarioModel;
-import com.projeto.songSystem.models.enums.Dificuldade;
-import com.projeto.songSystem.models.enums.StatusRepertorio;
+import com.projeto.songSystem.models.enums.Role;
 import com.projeto.songSystem.services.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,7 +24,10 @@ public class LoginController {
     private UsuarioService usuarioService;
 
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login(Model model, HttpSession session) {
+        if (session != null && session.getAttribute("usuarioDTO") != null) {
+            return "redirect:/inicio";
+        }
         model.addAttribute("usuarioDTO", new UsuarioDTO());
         return "login";
     }
@@ -33,29 +35,53 @@ public class LoginController {
     @PostMapping("/login/autenticar")
     public String processLogin(@RequestParam("username") String username,
                                @RequestParam("senha") String senha,
-                               HttpSession session,
+                               HttpServletRequest request,
                                RedirectAttributes attributes) {
-
         try {
             UsuarioModel usuario = usuarioService.autenticar(username, senha);
 
-            if (usuario != null && senha.equals(usuario.getSenha())) {
-                // Converter para DTO antes de salvar na sessão
-                UsuarioDTO usuarioDTO = new UsuarioDTO();
-                usuarioDTO.setId(usuario.getId());
-                usuarioDTO.setUsername(usuario.getUsername());
-                usuarioDTO.setEmail(usuario.getEmail());
-                usuarioDTO.setNome(usuario.getNome());
-
-                session.setAttribute("usuarioDTO", usuarioDTO);
-                return "redirect:/inicio";
-            } else {
-                attributes.addFlashAttribute("erro", "Usuário ou senha inválidos!");
+            if (usuario == null) {
+                attributes.addFlashAttribute("erro",
+                        "Usuário/e-mail ou senha incorretos. Verifique e tente novamente.");
                 return "redirect:/login";
             }
+
+            // Admin no primeiro acesso (sem senha definida): redireciona para setup
+            if (usuario.isPrimeiroAcesso()) {
+                HttpSession oldSession = request.getSession(false);
+                if (oldSession != null) oldSession.invalidate();
+                HttpSession setupSession = request.getSession(true);
+                // Guarda apenas o ID temporariamente — sem criar sessão completa
+                setupSession.setAttribute("adminSetupId", usuario.getId());
+                setupSession.setMaxInactiveInterval(10 * 60); // 10 minutos para concluir setup
+                return "redirect:/admin/setup";
+            }
+
+            // Login normal
+            HttpSession oldSession = request.getSession(false);
+            if (oldSession != null) oldSession.invalidate();
+
+            HttpSession newSession = request.getSession(true);
+            UsuarioDTO usuarioDTO = usuarioService.buscarPorId(usuario.getId());
+            newSession.setAttribute("usuarioDTO", usuarioDTO);
+            newSession.setMaxInactiveInterval(30 * 60);
+
+            return "redirect:/inicio";
+
         } catch (Exception e) {
-            attributes.addFlashAttribute("erro", "Usuário não encontrado!");
+            attributes.addFlashAttribute("erro",
+                    "Usuário/e-mail ou senha incorretos. Verifique e tente novamente.");
             return "redirect:/login";
         }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session != null) session.invalidate();
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+        return "redirect:/login?logout";
     }
 }

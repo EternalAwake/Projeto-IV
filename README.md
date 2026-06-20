@@ -31,13 +31,14 @@ Plataforma para músicos organizarem bandas, álbuns, músicas, repertório de e
 - **Escalas** (Maiores, Menores, Pentatônicas, Blues, etc.)
 - **Acordes** com posições no braço da guitarra
 - **Campos Harmônicos** por tom
+- **Técnicas** com nível de dificuldade
 - **Teorias Gerais** (conteúdos educativos)
 
 ### Outros Recursos
 - Sistema de autenticação (login/cadastro)
-- Upload de imagens
+- Recuperação de senha por pergunta secreta
+- Upload de imagens (até 5 MB por imagem)
 - Interface moderna com Bootstrap + Thymeleaf
-- Filtros e buscas avançadas
 - Design responsivo
 
 ---
@@ -45,61 +46,119 @@ Plataforma para músicos organizarem bandas, álbuns, músicas, repertório de e
 ## Como Rodar o Projeto
 
 ### Pré-requisitos
-- Java 21 ou superior
+- Java 21
 - MariaDB
+
+> O projeto já inclui o **Maven Wrapper** (`mvnw`), então não é necessário ter o Maven instalado.
 
 ### Passo a passo
 
 1. **Clone o projeto**
    ```bash
-   git clone <URL-DO-SEU-REPOSITORIO>
-   cd song-system
+   git clone https://github.com/EternalAwake/Projeto-IV.git
+   cd Projeto-IV
    ```
 
-2. **Configure o banco de dados**
+2. **Crie o banco de dados**
 
-   Crie o banco no MariaDB:
+   Abra o terminal do MariaDB e rode:
    ```sql
-   CREATE DATABASE song_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE songsystem;
    ```
 
-3. **Configure `application.properties`**
+3. **Ajuste as credenciais do banco (se necessário)**
 
-   Edite o arquivo `src/main/resources/application.properties`:
+   Abra o arquivo `src/main/resources/application-dev.properties` e edite as três linhas abaixo conforme sua instalação local. Exemplo:
 
    ```properties
-   spring.application.name=songsystem
    spring.datasource.url=jdbc:mariadb://localhost:3306/songsystem
    spring.datasource.username=root
-   spring.datasource.password=12345
-   spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
-   spring.jpa.hibernate.ddl-auto=update
-   spring.jpa.properties.hibernate.show_sql=true
-   
-   spring.thymeleaf.prefix=classpath:/templates/
-   spring.resources.static-locations=classpath:/static/
-   
-   spring.thymeleaf.suffix=.html
-   
-   app.upload.dir=C:/uploads/songsystem/
-   
-   spring.web.resources.static-locations=classpath:/static/,file:${app.upload.dir}
-   
-   spring.servlet.multipart.max-file-size=10MB
-   spring.servlet.multipart.max-request-size=10MB
+   spring.datasource.password=teste123
    ```
 
-4. **Crie a pasta de uploads**
+   As tabelas são criadas automaticamente na primeira execução. A pasta de uploads também é criada sozinha — não precisa criar nada na mão.
+
+4. **Execute o projeto**
+
+   Linux/macOS:
    ```bash
-   mkdir -p uploads
+   ./mvnw spring-boot:run
    ```
 
-5. **Execute o projeto**
-   ```bash
-   mvn spring-boot:run
+   Windows:
+   ```cmd
+   mvnw.cmd spring-boot:run
    ```
 
-Acesse no navegador: **http://localhost:8080**
+   Na primeira execução o Maven baixa as dependências, então pode demorar um pouco. Quando aparecer `Started SongSystemApplication`, está no ar.
+
+5. **Acesse no navegador**
+
+   ```
+   http://localhost:8080
+   ```
+
+---
+
+## Primeiro Acesso
+
+### Usuários comuns
+Clique em **Cadastrar** na tela de login, preencha os dados e faça login normalmente.
+
+### Usuário administrador
+O sistema cria automaticamente um usuário `admin` na primeira inicialização, sem senha. No primeiro login:
+
+1. Digite `admin` no campo de usuário e **deixe a senha em branco**
+2. Clique em **Entrar** — o sistema detecta que é o primeiro acesso e redireciona para a tela de configuração
+3. Defina uma senha (mínimo 8 caracteres) e cadastre uma pergunta secreta
+4. Após confirmar, faça login normalmente com a senha que acabou de criar
+
+> A tela de configuração inicial aparece apenas uma vez. A pergunta secreta é obrigatória para que o admin consiga recuperar a senha caso esqueça.
+
+---
+
+## Recuperação de Senha
+
+Caso esqueça a senha, clique em **Esqueci minha senha** na tela de login e siga os passos:
+
+1. Informe seu e-mail ou nome de usuário
+2. Responda a pergunta secreta cadastrada no seu perfil
+3. Defina uma nova senha
+
+> A pergunta secreta é configurada na tela de **Meu Perfil**, na seção "Pergunta Secreta". Cadastre a sua antes de precisar — sem ela, não é possível recuperar a senha sem intervenção do administrador.
+
+---
+
+## Painel Administrativo
+
+O usuário `admin` (e qualquer usuário que o admin promova) tem acesso ao painel em `/admin/usuarios`, acessível também pelo menu **Meu Perfil → Usuários**.
+
+No painel é possível:
+- Ver todos os usuários cadastrados
+- **Tornar Admin** — promove um usuário comum a administrador
+- **Tirar Admin** — rebaixa um admin promovido de volta a usuário comum
+- **Excluir** — remove um usuário e todos os seus dados permanentemente
+
+Regras fixas: o usuário `admin` principal não pode ser excluído nem rebaixado, e nenhum admin pode alterar a própria role ou excluir a própria conta.
+
+---
+
+## Ambientes (Dev / Prod)
+
+O projeto usa perfis separados. O ambiente ativo é definido em `application.properties`, e deve ser trocado para "prod" em produção:
+
+```properties
+spring.profiles.active=dev
+```
+
+Em **produção**, nenhuma credencial fica no código — tudo é lido de variáveis de ambiente que precisam estar definidas no servidor:
+
+| Variável | Descrição |
+|---|---|
+| `DB_URL` | ex.: `jdbc:mariadb://localhost:3306/songsystem` |
+| `DB_USERNAME` | usuário do banco |
+| `DB_PASSWORD` | senha do banco |
+| `APP_UPLOAD_DIR` | diretório de uploads, ex.: `/var/songsystem/uploads/` |
 
 ---
 
@@ -110,22 +169,27 @@ src/main/java/com/projeto/songSystem/
 ├── controllers/      → Controladores MVC
 ├── services/         → Regras de negócio
 ├── repositories/     → JPA Repositories
-├── models/           → Entidades do banco
+├── models/           → Entidades do banco e enums
 ├── dto/              → Objetos de transferência
-└── config/           → Configurações Spring
+├── util/             → Upload de imagem e hash de senha
+└── config/           → Segurança por sessão e recursos estáticos
 
 src/main/resources/
-├── templates/        → Páginas HTML (Thymeleaf)
-├── static/           → CSS, JS, imagens
-└── application.properties
+├── templates/              → Páginas HTML (Thymeleaf)
+├── static/                 → JS
+├── application.properties          → Configurações comuns e perfil ativo
+├── application-dev.properties      → Configurações de desenvolvimento
+└── application-prod.properties     → Configurações de produção
 ```
+
+---
 
 ## Tecnologias Utilizadas
 
-- **Backend**: Spring Boot + Spring MVC + JPA/Hibernate
+- **Backend**: Spring Boot 4.0.3 + Spring MVC + JPA/Hibernate
 - **Frontend**: Thymeleaf + Bootstrap 5
-- **Banco**: MySQL
-- **Build**: Maven
+- **Banco**: MariaDB
+- **Build**: Maven (via Maven Wrapper)
 
 ---
 
@@ -136,6 +200,7 @@ src/main/resources/
 - Repertório com estatísticas
 - Setlists
 - Seção de Teoria Musical
+- Painel de administração (usuários)
 
 ---
 

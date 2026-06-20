@@ -26,12 +26,13 @@ public class AlterarAlbumAlbuns {
     @GetMapping("/biblioteca/albuns/alteraralbum/{id}")
     public String exibirAlterarAlbum(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         AlbumDTO albumDTO = albumService.obterAlbumCompleto(id);
         model.addAttribute("albumDTO", albumDTO);
@@ -48,7 +49,7 @@ public class AlterarAlbumAlbuns {
             albumService.alterarAlbum(albumDTO);
             attributes.addFlashAttribute("mensagem", "Álbum alterado com sucesso!");
         }catch (Exception e) {
-            attributes.addFlashAttribute("erro", "Falha ao alterar álbum!");
+            attributes.addFlashAttribute("erro", "Falha ao alterar álbum: " + e.getMessage());
         }
         return "redirect:/biblioteca/albuns/alteraralbum/" + albumDTO.getAlbumId();
     }

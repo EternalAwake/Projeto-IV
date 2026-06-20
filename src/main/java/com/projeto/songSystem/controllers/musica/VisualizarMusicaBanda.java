@@ -20,12 +20,13 @@ public class VisualizarMusicaBanda {
     @GetMapping("/biblioteca/bandas/visualizar/visualizarmusica/{id}")
     public String exibirMusica(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         // Buscar a música com todos os dados (banda e álbum)
         MusicaDTO musica = musicaService.obterMusicaComDadosCompletos(id);

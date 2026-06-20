@@ -4,6 +4,8 @@ import com.projeto.songSystem.dto.TeoriaGeralDTO;
 import com.projeto.songSystem.dto.TeoriaGeralResponseDTO;
 import com.projeto.songSystem.services.TeoriaGeralService;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,7 +24,15 @@ public class TeoriaGeraisController {
 
     // Listar todas as teorias
     @GetMapping
-    public String listarTeorias(Model model) {
+    public String listarTeorias(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         List<TeoriaGeralResponseDTO> teorias = teoriaService.buscarTodasAtivas();
         List<String> categorias = teoriaService.buscarTodasCategorias();
 
@@ -34,11 +44,19 @@ public class TeoriaGeraisController {
 
     // Visualizar teoria específica
     @GetMapping("/visualizar/{id}")
-    public String visualizarTeoria(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String visualizarTeoria(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         try {
             TeoriaGeralResponseDTO teoria = teoriaService.buscarPorId(id);
             model.addAttribute("teoria", teoria);
-            return "ViusalizarTeoriaGeral";
+            return "VisualizarTeoriaGeral";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Teoria não encontrada!");
             return "redirect:/TeoriasGerais";
@@ -47,7 +65,15 @@ public class TeoriaGeraisController {
 
     // Formulário para nova teoria
     @GetMapping("/novo")
-    public String formularioNovaTeoria(Model model) {
+    public String formularioNovaTeoria(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         TeoriaGeralDTO teoriaDTO = new TeoriaGeralDTO();
         teoriaDTO.setAtivo(true);
         teoriaDTO.setOrdemExibicao(0);
@@ -66,9 +92,12 @@ public class TeoriaGeraisController {
     // Salvar nova teoria
     @PostMapping("/salvar")
     public String salvarTeoria(@ModelAttribute("teoriaDTO") TeoriaGeralDTO teoriaDTO,
+                               HttpSession session,
                                BindingResult result,
                                RedirectAttributes redirectAttributes,
                                Model model) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
         if (result.hasErrors()) {
             model.addAttribute("acao", "nova");
             model.addAttribute("iconesDisponiveis", getIconesDisponiveis());
@@ -91,7 +120,15 @@ public class TeoriaGeraisController {
 
     // Formulário para editar teoria
     @GetMapping("/editar/{id}")
-    public String formularioEditarTeoria(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String formularioEditarTeoria(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         try {
             TeoriaGeralDTO teoriaDTO = teoriaService.buscarParaEdicao(id);
             model.addAttribute("teoriaDTO", teoriaDTO);
@@ -131,7 +168,9 @@ public class TeoriaGeraisController {
 
     // Excluir teoria
     @PostMapping("/excluir/{id}")
-    public String excluirTeoria(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String excluirTeoria(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
         try {
             teoriaService.excluirTeoria(id);
             redirectAttributes.addFlashAttribute("sucesso", "Teoria excluída com sucesso!");

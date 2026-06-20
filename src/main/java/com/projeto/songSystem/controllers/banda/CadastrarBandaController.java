@@ -22,12 +22,13 @@ public class CadastrarBandaController {
     @GetMapping("/biblioteca/bandas/cadastrarbanda")
     public String exibirCadastrarBanda(Model model, HttpSession session) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         BandaDTO bandaDTO = new BandaDTO();
         model.addAttribute("bandaDTO", bandaDTO);
@@ -41,7 +42,7 @@ public class CadastrarBandaController {
             bandaService.cadastrarBanda(bandaDTO);
             attributes.addFlashAttribute("mensagem", "Banda cadastrada com sucesso!");
         } catch (Exception e) {
-            attributes.addFlashAttribute("erro", "Falha ao cadastrar banda.");
+            attributes.addFlashAttribute("erro", "Falha ao cadastrar banda: " + e.getMessage());
         }
         return "redirect:/biblioteca/bandas/cadastrarbanda";
     }

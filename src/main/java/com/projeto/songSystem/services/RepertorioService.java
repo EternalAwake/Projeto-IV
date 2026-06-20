@@ -10,6 +10,7 @@ import com.projeto.songSystem.models.enums.StatusRepertorio;
 import com.projeto.songSystem.repositories.MusicaRepository;
 import com.projeto.songSystem.repositories.RepertorioItemRepository;
 import com.projeto.songSystem.repositories.UsuarioRepository;
+import com.projeto.songSystem.repositories.SetlistItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,9 @@ public class RepertorioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private SetlistItemRepository setlistItemRepository;
 
     /**
      * Adiciona uma música ao repertório do usuário
@@ -138,6 +142,9 @@ public class RepertorioService {
     public void removerDoRepertorio(Long usuarioId, Long musicaId) {
         RepertorioItemModel item = repertorioItemRepository.findByUsuarioIdAndMusicaId(usuarioId, musicaId)
                 .orElseThrow(() -> new RuntimeException("Música não encontrada no repertório"));
+        // Remover SetlistItems que apontam para este RepertorioItem antes de deletá-lo,
+        // para não violar a FK NOT NULL de setlist_item.repertorio_item_id.
+        setlistItemRepository.deleteByRepertorioItemId(item.getId());
         repertorioItemRepository.delete(item);
     }
 

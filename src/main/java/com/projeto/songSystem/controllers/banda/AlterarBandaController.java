@@ -19,12 +19,13 @@ public class AlterarBandaController {
     @GetMapping("/biblioteca/bandas/visualizar/alterarbanda/{id}")
     public String exibirAlterarBanda(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         BandaDTO bandaDTO = bandaService.obterBanda(id);
         model.addAttribute("banda", bandaDTO);

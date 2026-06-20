@@ -31,12 +31,13 @@ public class AlterarMusicaBandaLista {
     @GetMapping("/biblioteca/bandas/visualizar/alterarmusica/{id}")
     public String exibirAlterarMusica(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         MusicaDTO musica = musicaService.obterMusicaComDadosCompletos(id);
 

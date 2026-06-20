@@ -33,10 +33,16 @@ public class TecnicaService {
     }
 
     public List<TecnicaDTO> listarTecnicasPorNivel(String nivel) {
-        return tecnicaRepository.findByNivelOrderByNomeAsc(nivel)
-                .stream()
-                .map(this::converterParaDTO)
-                .collect(Collectors.toList());
+        try {
+            Nivel nivelEnum = Nivel.valueOf(nivel.toUpperCase());
+            return tecnicaRepository.findByNivelOrderByNomeAsc(nivelEnum)
+                    .stream()
+                    .map(this::converterParaDTO)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            // Nível inválido — retornar lista vazia em vez de lançar exceção
+            return java.util.Collections.emptyList();
+        }
     }
 
     public List<String> listarCategorias() {
