@@ -41,7 +41,7 @@ public class CadastrarAlbumAlbuns {
         AlbumDTO albumDTO = new AlbumDTO();
         model.addAttribute("albumDTO", albumDTO);
 
-        List<BandaModel> bandaModel = bandaService.listarBandas();
+        List<BandaModel> bandaModel = bandaService.listarBandasBasicas();
         model.addAttribute("bandas", bandaModel);
 
         return "cadastraralbumalbuns";
@@ -55,7 +55,7 @@ public class CadastrarAlbumAlbuns {
         } catch (Exception e) {
             attributes.addFlashAttribute("erro", "Falha ao cadastrar álbum: " + e.getMessage());
         }
-        return "redirect:/biblioteca/albuns/cadastraralbum";
+        return "redirect:/biblioteca/albuns";
     }
 
 }

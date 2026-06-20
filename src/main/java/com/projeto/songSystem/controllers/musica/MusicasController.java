@@ -44,7 +44,7 @@ public class MusicasController {
 
 
         List<MusicaModel> musicas = musicaService.listarMusicas();
-        List<BandaModel> todasBandas = bandaService.listarBandas();
+        List<BandaModel> todasBandas = bandaService.listarBandasBasicas();
 
         model.addAttribute("musicas", musicas);
         model.addAttribute("todasBandas", todasBandas);

@@ -92,6 +92,25 @@ public class AdminController {
         }
     }
 
+    @PostMapping("/usuarios/{id}/redefinir-senha")
+    @ResponseBody
+    public String redefinirSenha(@PathVariable Long id,
+                                 @RequestParam("novaSenha") String novaSenha,
+                                 @RequestParam("confirmarNovaSenha") String confirmarNovaSenha,
+                                 HttpSession session) {
+        UsuarioDTO admin = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (admin == null) return "erro:Sessão expirada";
+        try {
+            usuarioService.redefinirSenhaPorAdmin(
+                    admin.getId(), id, novaSenha, confirmarNovaSenha);
+            return "ok";
+        } catch (IllegalArgumentException e) {
+            return "erro:" + e.getMessage();
+        } catch (Exception e) {
+            return "erro:Não foi possível redefinir a senha do usuário.";
+        }
+    }
+
     @PostMapping("/usuarios/{id}/tornar-admin")
     @ResponseBody
     public String tornarAdmin(@PathVariable Long id, HttpSession session) {

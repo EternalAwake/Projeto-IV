@@ -216,6 +216,49 @@ public class UsuarioService {
 
     // ─── Admin: gerenciamento de usuários ────────────────────────────────────
 
+    /**
+     * Permite que um administrador defina uma nova senha para uma conta comum.
+     * Contas ADMIN nunca podem ser alteradas por este fluxo.
+     */
+    @Transactional
+    public void redefinirSenhaPorAdmin(Long adminId,
+                                       Long usuarioId,
+                                       String novaSenha,
+                                       String confirmarNovaSenha) {
+        UsuarioModel admin = usuarioRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Administrador não encontrado."));
+
+        if (!Role.ADMIN.equals(admin.getRole()) || Boolean.FALSE.equals(admin.getAtivo())) {
+            throw new IllegalArgumentException("Você não tem permissão para redefinir senhas.");
+        }
+        if (adminId.equals(usuarioId)) {
+            throw new IllegalArgumentException("Use o perfil para alterar a sua própria senha.");
+        }
+
+        UsuarioModel usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        if (Role.ADMIN.equals(usuario.getRole())) {
+            throw new IllegalArgumentException("A senha de outro administrador não pode ser redefinida.");
+        }
+        if (novaSenha == null || novaSenha.length() < 8) {
+            throw new IllegalArgumentException("A nova senha deve ter no mínimo 8 caracteres.");
+        }
+        if (novaSenha.length() > 128) {
+            throw new IllegalArgumentException("A nova senha deve ter no máximo 128 caracteres.");
+        }
+        if (!novaSenha.equals(confirmarNovaSenha)) {
+            throw new IllegalArgumentException("A confirmação da nova senha não confere.");
+        }
+        if (PasswordUtil.verificar(novaSenha, usuario.getSenha())) {
+            throw new IllegalArgumentException("A nova senha deve ser diferente da senha atual do usuário.");
+        }
+
+        usuario.setSenha(PasswordUtil.hash(novaSenha));
+        usuario.setDataAtualizacao(LocalDateTime.now());
+        usuarioRepository.save(usuario);
+    }
+
     @Transactional
     public void excluirUsuario(Long adminId, Long usuarioId) {
         if (adminId.equals(usuarioId)) {

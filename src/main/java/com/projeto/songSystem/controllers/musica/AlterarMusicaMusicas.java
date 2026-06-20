@@ -41,7 +41,7 @@ public class AlterarMusicaMusicas {
 
         MusicaDTO musica = musicaService.obterMusicaComDadosCompletos(id);
 
-        List<BandaModel> bandas = bandaService.listarBandas();
+        List<BandaModel> bandas = bandaService.listarBandasBasicas();
         List<AlbumModel> albuns = albumService.listarAlbuns();
 
         model.addAttribute("musica", musica);

@@ -48,7 +48,9 @@ public class MusicaService {
     }
 
     public List<MusicaModel> listarMusicas() {
-        return musicaRepository.findAll();
+        // Carrega banda e album junto para evitar LazyInitializationException
+        // quando o template acessa musica.banda.bandaNome / musica.album.albumNome
+        return musicaRepository.findAllWithBandaAndAlbum();
     }
 
     @Transactional

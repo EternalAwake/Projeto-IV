@@ -41,7 +41,7 @@ public class CadastrarMusicaMusicas {
 
 
         // Buscar listas para os selects
-        List<BandaModel> bandas = bandaService.listarBandas();
+        List<BandaModel> bandas = bandaService.listarBandasBasicas();
         List<AlbumModel> albuns = albumService.listarAlbuns();
 
         model.addAttribute("bandas", bandas);
@@ -57,7 +57,7 @@ public class CadastrarMusicaMusicas {
         try {
             musicaService.cadastrarMusica(musicaDTO);
             attributes.addFlashAttribute("mensagem", "Música cadastrada com sucesso!");
-            return "redirect:/biblioteca/musicas/cadastrarmusica";
+            return "redirect:/biblioteca/musicas";
 
         } catch (Exception e) {
             e.printStackTrace();

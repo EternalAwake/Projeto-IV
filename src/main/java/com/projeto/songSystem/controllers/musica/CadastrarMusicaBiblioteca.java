@@ -41,7 +41,7 @@ public class CadastrarMusicaBiblioteca {
 
 
         // Buscar listas para os selects
-        List<BandaModel> bandas = bandaService.listarBandas();
+        List<BandaModel> bandas = bandaService.listarBandasBasicas();
         List<AlbumModel> albuns = albumService.listarAlbuns();
 
         model.addAttribute("bandas", bandas);

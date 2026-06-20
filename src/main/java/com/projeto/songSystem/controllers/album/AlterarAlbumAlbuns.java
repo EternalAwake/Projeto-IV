@@ -37,7 +37,7 @@ public class AlterarAlbumAlbuns {
         AlbumDTO albumDTO = albumService.obterAlbumCompleto(id);
         model.addAttribute("albumDTO", albumDTO);
 
-        List<BandaModel> bandaModel = bandaService.listarBandas();
+        List<BandaModel> bandaModel = bandaService.listarBandasBasicas();
         model.addAttribute("bandas", bandaModel);
 
         return "AlterarAlbumAlbuns";

@@ -49,7 +49,7 @@ public class TeoriaAcordeController {
         model.addAttribute("totalDiminutos", totalDiminutos);
         model.addAttribute("totalAumentados", totalAumentados);
 
-        return "acordes";
+        return "Acordes";
     }
 
     @GetMapping("/{id}")

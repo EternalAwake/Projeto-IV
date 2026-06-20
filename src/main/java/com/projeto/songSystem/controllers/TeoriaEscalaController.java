@@ -47,7 +47,7 @@ public class TeoriaEscalaController {
         model.addAttribute("totalMenores", totalMenores);
         model.addAttribute("totalPentatonicas", totalPentatonicas);
 
-        return "escalas";
+        return "Escalas";
     }
 
     @GetMapping("/{id}")

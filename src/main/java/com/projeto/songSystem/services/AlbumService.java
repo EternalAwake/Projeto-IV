@@ -32,12 +32,17 @@ public class AlbumService {
     @Autowired
     private BandaRepository bandaRepository;
 
+    @Autowired
+    private UploadStorageService uploadStorageService;
+
     public long obterQtdAlbuns() {
         return albumRepository.count();
     }
 
     public List<AlbumModel> listarAlbuns() {
-        return albumRepository.findAll();
+        // Carrega músicas e banda junto para a tela exibir contagens sem
+        // LazyInitializationException (open-in-view desativado).
+        return albumRepository.findAllWithMusicasAndBanda();
     }
 
     @Transactional
@@ -46,7 +51,13 @@ public class AlbumService {
 
         // Preencher os dados
         albumModel.setAlbumNome(albumDTO.getAlbumNome());
-        albumModel.setBanda(albumDTO.getBanda());
+
+        // Vincular banda pelo ID (o form envia apenas bandaId, não o objeto completo)
+        if (albumDTO.getBandaId() != null && albumDTO.getBandaId() > 0) {
+            com.projeto.songSystem.models.BandaModel banda = bandaRepository.findById(albumDTO.getBandaId())
+                    .orElseThrow(() -> new RuntimeException("Banda não encontrada com ID: " + albumDTO.getBandaId()));
+            albumModel.setBanda(banda);
+        }
         albumModel.setAlbumAnoLancamento(albumDTO.getAlbumAnoLancamento());
         albumModel.setAlbumDestaque(albumDTO.getAlbumDestaque() != null ? albumDTO.getAlbumDestaque() : false);
         albumModel.setAlbumNumeroFaixas(albumDTO.getAlbumNumeroFaixas());
@@ -57,6 +68,7 @@ public class AlbumService {
         MultipartFile imagem = albumDTO.getAlbumAvatar();
         if (imagem != null && !imagem.isEmpty()) {
             String caminhoImagem = salvarImagem(imagem, "albuns");
+            uploadStorageService.registrarNovoArquivo(caminhoImagem);
             albumModel.setAlbumImagem(caminhoImagem);
         }
 
@@ -94,10 +106,12 @@ public class AlbumService {
             }
         }
 
-        albumRepository.deleteById(id);
+        albumRepository.delete(album);
+        uploadStorageService.agendarExclusaoAposCommit(album.getAlbumImagem());
         return true;
     }
 
+    @Transactional(readOnly = true)
     public AlbumDTO obterAlbumCompleto(Long albumId) {
         AlbumModel album = albumRepository.findById(albumId)
                 .orElseThrow(() -> new RuntimeException("Álbum não encontrado com ID: " + albumId));
@@ -156,7 +170,9 @@ public class AlbumService {
         // Processar imagem (apenas se uma nova for enviada)
         MultipartFile imagem = albumDto.getAlbumAvatar();
         if (imagem != null && !imagem.isEmpty()) {
+            String imagemAntiga = albumModel.getAlbumImagem();
             String caminhoImagem = salvarImagem(imagem, "albuns");
+            uploadStorageService.registrarSubstituicao(imagemAntiga, caminhoImagem);
             albumModel.setAlbumImagem(caminhoImagem);
         }
 
@@ -197,6 +213,7 @@ public class AlbumService {
         MultipartFile imagem = albumDto.getAlbumAvatar();
         if (imagem != null && !imagem.isEmpty()) {
             String caminhoImagem = salvarImagem(imagem, "albuns");
+            uploadStorageService.registrarNovoArquivo(caminhoImagem);
             album.setAlbumImagem(caminhoImagem);
         }
 

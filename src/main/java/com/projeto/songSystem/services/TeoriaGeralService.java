@@ -18,6 +18,9 @@ public class TeoriaGeralService {
     @Autowired
     private TeoriaGeralRepository teoriaRepository;
 
+    @Autowired
+    private UploadStorageService uploadStorageService;
+
     // Converter Entity para ResponseDTO
     private TeoriaGeralResponseDTO convertToResponseDTO(TeoriaGeralModel teoria) {
         TeoriaGeralResponseDTO dto = new TeoriaGeralResponseDTO();
@@ -137,7 +140,11 @@ public class TeoriaGeralService {
             throw new RuntimeException("Já existe uma teoria com este título");
         }
 
+        String imagemAntiga = existing.getUrlImagem();
         updateEntityFromDTO(existing, dto);
+        if (!java.util.Objects.equals(imagemAntiga, existing.getUrlImagem())) {
+            uploadStorageService.agendarExclusaoAposCommit(imagemAntiga);
+        }
         TeoriaGeralModel updated = teoriaRepository.save(existing);
         return convertToResponseDTO(updated);
     }
@@ -154,10 +161,10 @@ public class TeoriaGeralService {
     // Excluir permanentemente
     @Transactional
     public void excluirPermanentemente(Long id) {
-        if (!teoriaRepository.existsById(id)) {
-            throw new RuntimeException("Teoria não encontrada com ID: " + id);
-        }
-        teoriaRepository.deleteById(id);
+        TeoriaGeralModel teoria = teoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Teoria não encontrada com ID: " + id));
+        teoriaRepository.delete(teoria);
+        uploadStorageService.agendarExclusaoAposCommit(teoria.getUrlImagem());
     }
 
     // Buscar por categoria

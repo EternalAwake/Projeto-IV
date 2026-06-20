@@ -44,6 +44,6 @@ public class CadastrarBandaController {
         } catch (Exception e) {
             attributes.addFlashAttribute("erro", "Falha ao cadastrar banda: " + e.getMessage());
         }
-        return "redirect:/biblioteca/bandas/cadastrarbanda";
+        return "redirect:/biblioteca/bandas";
     }
 }

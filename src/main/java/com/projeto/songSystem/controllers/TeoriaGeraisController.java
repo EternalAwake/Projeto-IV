@@ -59,7 +59,7 @@ public class TeoriaGeraisController {
             return "VisualizarTeoriaGeral";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Teoria não encontrada!");
-            return "redirect:/TeoriasGerais";
+            return "redirect:/teoria/geral";
         }
     }
 
@@ -108,7 +108,7 @@ public class TeoriaGeraisController {
         try {
             TeoriaGeralResponseDTO saved = teoriaService.criarTeoria(teoriaDTO);
             redirectAttributes.addFlashAttribute("sucesso", "Teoria \"" + saved.getTitulo() + "\" criada com sucesso!");
-            return "redirect:/TeoriasGerais";
+            return "redirect:/teoria/geral";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Erro ao salvar: " + e.getMessage());
             model.addAttribute("acao", "nova");
@@ -138,7 +138,7 @@ public class TeoriaGeraisController {
             return "CadastrarEditarTeoriaGeral";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Teoria não encontrada para edição!");
-            return "redirect:/TeoriasGearis";
+            return "redirect:/teoria/geral";
         }
     }
 
@@ -159,10 +159,10 @@ public class TeoriaGeraisController {
         try {
             TeoriaGeralResponseDTO updated = teoriaService.atualizarTeoria(id, teoriaDTO);
             redirectAttributes.addFlashAttribute("sucesso", "Teoria \"" + updated.getTitulo() + "\" atualizada com sucesso!");
-            return "redirect:/TeoriasGearis";
+            return "redirect:/teoria/geral";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Erro ao atualizar: " + e.getMessage());
-            return "redirect:/CadastrarEditarTeoriaGeral/" + id;
+            return "redirect:/teoria/geral/editar/" + id;
         }
     }
 

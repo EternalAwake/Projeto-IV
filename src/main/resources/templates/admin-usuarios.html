@@ -200,6 +200,17 @@
                                                 <!-- Outros usuários -->
                                                 <th:block th:if="${u.id != usuarioDTO.id and u.username != 'admin'}">
 
+                                                    <!-- Redefinir senha (somente contas USER) -->
+                                                    <button th:if="${u.role == null or u.role.name() == 'USER'}"
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-primary rounded-3 btn-reset-senha"
+                                                            data-action="reset-senha"
+                                                            th:data-id="${u.id}"
+                                                            th:data-nome="${u.nome ?: u.username}"
+                                                            onclick="abrirResetSenha(this)">
+                                                        <i class="bi bi-key me-1"></i>Redefinir senha
+                                                    </button>
+
                                                     <!-- Tornar admin (só para USER) -->
                                                     <button th:if="${u.role == null or u.role.name() == 'USER'}"
                                                             class="btn btn-sm btn-outline-warning rounded-3"
@@ -274,10 +285,127 @@
     </div>
 </div>
 
+<!-- Modal de redefinição de senha -->
+<div class="modal fade" id="modalResetSenha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form id="formResetSenha">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-key text-primary me-2"></i>Redefinir senha
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">
+                        Defina uma nova senha para <strong id="nomeResetSenha"></strong>.
+                        Esta ação não está disponível para contas administradoras.
+                    </p>
+
+                    <div id="erroResetSenha" class="alert alert-danger d-none py-2" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label for="novaSenhaAdmin" class="form-label fw-semibold">Nova senha</label>
+                        <input type="password" class="form-control rounded-3" id="novaSenhaAdmin"
+                               minlength="8" maxlength="128" autocomplete="new-password" required>
+                        <div class="form-text">Use entre 8 e 128 caracteres.</div>
+                    </div>
+
+                    <div>
+                        <label for="confirmarSenhaAdmin" class="form-label fw-semibold">Confirmar nova senha</label>
+                        <input type="password" class="form-control rounded-3" id="confirmarSenhaAdmin"
+                               minlength="8" maxlength="128" autocomplete="new-password" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-3" id="btnSalvarResetSenha">
+                        <i class="bi bi-check-lg me-1"></i>Salvar nova senha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let idParaExcluir = null;
     const modal = new bootstrap.Modal(document.getElementById('modalExcluir'));
+    let idParaResetSenha = null;
+    let nomeParaResetSenha = '';
+    const modalResetSenha = new bootstrap.Modal(document.getElementById('modalResetSenha'));
+
+    function abrirResetSenha(btn) {
+        idParaResetSenha = btn.dataset.id;
+        nomeParaResetSenha = btn.dataset.nome;
+        document.getElementById('nomeResetSenha').textContent = nomeParaResetSenha;
+        document.getElementById('novaSenhaAdmin').value = '';
+        document.getElementById('confirmarSenhaAdmin').value = '';
+        const erro = document.getElementById('erroResetSenha');
+        erro.textContent = '';
+        erro.classList.add('d-none');
+        modalResetSenha.show();
+    }
+
+    document.getElementById('formResetSenha').addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (!idParaResetSenha) return;
+
+        const novaSenha = document.getElementById('novaSenhaAdmin').value;
+        const confirmar = document.getElementById('confirmarSenhaAdmin').value;
+        const erro = document.getElementById('erroResetSenha');
+        const btn = document.getElementById('btnSalvarResetSenha');
+
+        erro.textContent = '';
+        erro.classList.add('d-none');
+
+        if (novaSenha.length < 8 || novaSenha.length > 128) {
+            erro.textContent = 'A senha deve ter entre 8 e 128 caracteres.';
+            erro.classList.remove('d-none');
+            return;
+        }
+        if (novaSenha !== confirmar) {
+            erro.textContent = 'A confirmação da nova senha não confere.';
+            erro.classList.remove('d-none');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Salvando...';
+
+        const dados = new URLSearchParams();
+        dados.set('novaSenha', novaSenha);
+        dados.set('confirmarNovaSenha', confirmar);
+
+        fetch('/admin/usuarios/' + idParaResetSenha + '/redefinir-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: dados.toString()
+        })
+            .then(r => r.text())
+            .then(resp => {
+                if (resp === 'ok') {
+                    modalResetSenha.hide();
+                    showAlert('success', 'Senha de "' + nomeParaResetSenha + '" redefinida com sucesso.');
+                    idParaResetSenha = null;
+                    nomeParaResetSenha = '';
+                } else {
+                    erro.textContent = resp.startsWith('erro:')
+                        ? resp.slice(5)
+                        : 'Não foi possível redefinir a senha.';
+                    erro.classList.remove('d-none');
+                }
+            })
+            .catch(() => {
+                erro.textContent = 'Erro de conexão.';
+                erro.classList.remove('d-none');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Salvar nova senha';
+            });
+    });
 
     function confirmarExclusao(btn) {
         idParaExcluir = btn.dataset.id;
@@ -322,6 +450,8 @@
                 if (resp === 'ok') {
                     document.getElementById('role-badge-' + id).innerHTML = '<span class="badge-admin">Admin</span>';
                     const actions = document.getElementById('actions-' + id);
+                    const resetBtn = actions.querySelector('[data-action="reset-senha"]');
+                    if (resetBtn) resetBtn.remove();
                     btn.remove();
                     const tirarBtn = document.createElement('button');
                     tirarBtn.className = 'btn btn-sm btn-outline-secondary rounded-3';
@@ -361,6 +491,17 @@
                     promoverBtn.setAttribute('onclick', 'tornarAdmin(this)');
                     promoverBtn.innerHTML = '<i class="bi bi-shield-plus me-1"></i>Tornar Admin';
                     actions.prepend(promoverBtn);
+
+                    const resetBtn = document.createElement('button');
+                    resetBtn.type = 'button';
+                    resetBtn.className = 'btn btn-sm btn-outline-primary rounded-3 btn-reset-senha';
+                    resetBtn.dataset.action = 'reset-senha';
+                    resetBtn.dataset.id = id;
+                    resetBtn.dataset.nome = nome;
+                    resetBtn.setAttribute('onclick', 'abrirResetSenha(this)');
+                    resetBtn.innerHTML = '<i class="bi bi-key me-1"></i>Redefinir senha';
+                    promoverBtn.insertAdjacentElement('afterend', resetBtn);
+
                     const avatar = document.querySelector('#row-' + id + ' .user-avatar');
                     if (avatar) avatar.classList.remove('admin-avatar');
                     showAlert('success', 'Permissão de admin removida de "' + nome + '".');

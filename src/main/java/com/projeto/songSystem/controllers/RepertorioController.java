@@ -86,7 +86,7 @@ public class RepertorioController {
         model.addAttribute("statusList", StatusRepertorio.values());
         model.addAttribute("dificuldadeList", Dificuldade.values());
 
-        return "repertorio";
+        return "Repertorio";
     }
 
     @PostMapping("/adicionar")
@@ -179,9 +179,10 @@ public class RepertorioController {
         UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) return "redirect:/login";
 
-        RepertorioEstatisticasDTO estatisticas = repertorioService.obterEstatisticas(usuarioDto.getId());
-        model.addAttribute("estatisticas", estatisticas);
-        return "repertorioEstatisticas";
+        // As estatísticas já são exibidas na própria tela de repertório.
+        // Não existe template dedicado "repertorioEstatisticas", então
+        // redirecionamos para o repertório em vez de cair em Whitelabel.
+        return "redirect:/repertorio";
     }
 
     @GetMapping("/api/musicas/disponiveis")
