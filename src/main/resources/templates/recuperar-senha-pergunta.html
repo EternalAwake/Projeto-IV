@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Senha - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background:#212529; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
+        .card-box { background:#2b3035; border-radius:30px; box-shadow:0 20px 40px rgba(0,0,0,.5); max-width:480px; width:100%; margin:20px; border:1px solid rgba(255,255,255,.1); overflow:hidden; }
+        .card-header-custom { background:#212529; padding:35px 40px; text-align:center; border-bottom:1px solid rgba(255,255,255,.1); }
+        .card-header-custom i { font-size:3rem; color:#0d6efd; margin-bottom:12px; }
+        .card-header-custom h3 { color:white; font-weight:600; margin:0; font-size:1.4rem; }
+        .card-body-custom { padding:40px; }
+        .form-control { background:#212529; border:1px solid #495057; color:white; }
+        .form-control:focus { background:#212529; border-color:#0d6efd; box-shadow:0 0 0 .2rem rgba(13,110,253,.25); color:white; }
+        label { color:#adb5bd; }
+        .pergunta-box { background:rgba(13,110,253,.1); border:1px solid rgba(13,110,253,.3); border-radius:12px; padding:16px 20px; margin-bottom:24px; }
+        .pergunta-box p { color:#90b4f7; margin:0; font-size:.95rem; }
+        .pergunta-box strong { color:white; font-size:1rem; display:block; margin-top:6px; }
+    </style>
+</head>
+<body>
+<div class="card-box">
+    <div class="card-header-custom">
+        <i class="bi bi-shield-lock"></i>
+        <h3>Pergunta de Segurança</h3>
+    </div>
+    <div class="card-body-custom">
+
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${erro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="pergunta-box">
+            <p>Responda a sua pergunta secreta:</p>
+            <strong th:text="${pergunta}">Sua pergunta aqui</strong>
+        </div>
+
+        <form th:action="@{/recuperar-senha/redefinir}" method="post">
+            <!-- Carrega o identificador do usuário de volta para o POST seguinte -->
+            <input type="hidden" name="usernameOuEmail" th:value="${usernameOuEmail}">
+
+            <div class="mb-3">
+                <label for="resposta" class="form-label">Sua resposta</label>
+                <input type="text" class="form-control" id="resposta" name="resposta"
+                       placeholder="Digite sua resposta" required autofocus autocomplete="off">
+                <div class="form-text text-secondary">A resposta não diferencia maiúsculas/minúsculas.</div>
+            </div>
+
+            <hr class="border-secondary my-3">
+            <p class="text-secondary small mb-3">Defina sua nova senha:</p>
+
+            <div class="mb-3">
+                <label for="novaSenha" class="form-label">Nova senha</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="novaSenha" name="novaSenha"
+                           placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password"
+                           oninput="checkMatch()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="toggle('novaSenha',this)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="confirmar" class="form-label">Confirmar nova senha</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirmar" name="confirmar"
+                           placeholder="Repita a nova senha" required autocomplete="new-password"
+                           oninput="checkMatch()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="toggle('confirmar',this)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <small id="matchMsg" class="mt-1 d-block"></small>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <i class="bi bi-check-circle me-2"></i>Redefinir Senha
+            </button>
+        </form>
+
+        <hr class="border-secondary my-4">
+        <div class="text-center">
+            <a th:href="@{/recuperar-senha}" class="text-decoration-none text-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Tentar outro usuário
+            </a>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggle(id, btn) {
+        const el = document.getElementById(id);
+        const icon = btn.querySelector('i');
+        el.type = el.type === 'password' ? 'text' : 'password';
+        icon.className = el.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    }
+    function checkMatch() {
+        const a = document.getElementById('novaSenha').value;
+        const b = document.getElementById('confirmar').value;
+        const msg = document.getElementById('matchMsg');
+        if (!b) { msg.textContent = ''; return; }
+        msg.textContent = a === b ? 'Senhas conferem ✓' : 'As senhas não conferem';
+        msg.className = 'mt-1 d-block ' + (a === b ? 'text-success' : 'text-danger');
+    }
+</script>
+</body>
+</html>

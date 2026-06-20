@@ -3,7 +3,10 @@ package com.projeto.songSystem.controllers;
 import com.projeto.songSystem.dto.TeoriaCampoHarmonicoDTO;
 import com.projeto.songSystem.services.TeoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +22,15 @@ public class VisualizarCampoHarmonico {
     private TeoriaService teoriaService;
 
     @GetMapping("/teoria/campo-harmonico/{tom}")
-    public String visualizarCampo(@PathVariable String tom, Model model) {
+    public String visualizarCampo(@PathVariable String tom, Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         List<TeoriaCampoHarmonicoDTO> campos = teoriaService.listarCampoHarmonicoPorTom(tom);
         model.addAttribute("tom", tom);
         model.addAttribute("campos", campos);
@@ -34,7 +45,10 @@ public class VisualizarCampoHarmonico {
             @RequestParam String tipo,
             @RequestParam String funcao,
             @RequestParam(required = false) String notas,
+            HttpSession session,
             RedirectAttributes attributes) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
 
         try {
             TeoriaCampoHarmonicoDTO dto = new TeoriaCampoHarmonicoDTO();
@@ -62,7 +76,10 @@ public class VisualizarCampoHarmonico {
             @RequestParam String tipo,
             @RequestParam String funcao,
             @RequestParam(required = false) String notas,
+            HttpSession session,
             RedirectAttributes attributes) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
 
         try {
             TeoriaCampoHarmonicoDTO dto = new TeoriaCampoHarmonicoDTO();
@@ -84,7 +101,9 @@ public class VisualizarCampoHarmonico {
 
     @DeleteMapping("/teoria/campo-harmonico/excluir-acorde/{id}")
     @ResponseBody
-    public ResponseEntity<String> excluirAcorde(@PathVariable Long id) {
+    public ResponseEntity<String> excluirAcorde(@PathVariable Long id, HttpSession session) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
         try {
             TeoriaCampoHarmonicoDTO acorde = teoriaService.buscarCampoHarmonicoPorId(id);
             String tom = acorde.getTom();
@@ -97,7 +116,9 @@ public class VisualizarCampoHarmonico {
 
     @DeleteMapping("/teoria/campo-harmonico/excluir-campo/{tom}")
     @ResponseBody
-    public ResponseEntity<String> excluirCampoCompleto(@PathVariable String tom) {
+    public ResponseEntity<String> excluirCampoCompleto(@PathVariable String tom, HttpSession session) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
         try {
             teoriaService.excluirCampoPorTom(tom);
             return ResponseEntity.ok("Campo harmônico de " + tom + " excluído com sucesso");

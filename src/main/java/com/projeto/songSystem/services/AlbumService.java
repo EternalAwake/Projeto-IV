@@ -8,20 +8,16 @@ import com.projeto.songSystem.models.BandaModel;
 import com.projeto.songSystem.models.MusicaModel;
 import com.projeto.songSystem.repositories.AlbumRepository;
 import com.projeto.songSystem.repositories.BandaRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.projeto.songSystem.util.ImageUploadUtil;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,14 +27,22 @@ public class AlbumService {
     private AlbumRepository albumRepository;
 
     @Autowired
+    private MusicaService musicaService;
+
+    @Autowired
     private BandaRepository bandaRepository;
+
+    @Autowired
+    private UploadStorageService uploadStorageService;
 
     public long obterQtdAlbuns() {
         return albumRepository.count();
     }
 
     public List<AlbumModel> listarAlbuns() {
-        return albumRepository.findAll();
+        // Carrega músicas e banda junto para a tela exibir contagens sem
+        // LazyInitializationException (open-in-view desativado).
+        return albumRepository.findAllWithMusicasAndBanda();
     }
 
     @Transactional
@@ -47,7 +51,13 @@ public class AlbumService {
 
         // Preencher os dados
         albumModel.setAlbumNome(albumDTO.getAlbumNome());
-        albumModel.setBanda(albumDTO.getBanda());
+
+        // Vincular banda pelo ID (o form envia apenas bandaId, não o objeto completo)
+        if (albumDTO.getBandaId() != null && albumDTO.getBandaId() > 0) {
+            com.projeto.songSystem.models.BandaModel banda = bandaRepository.findById(albumDTO.getBandaId())
+                    .orElseThrow(() -> new RuntimeException("Banda não encontrada com ID: " + albumDTO.getBandaId()));
+            albumModel.setBanda(banda);
+        }
         albumModel.setAlbumAnoLancamento(albumDTO.getAlbumAnoLancamento());
         albumModel.setAlbumDestaque(albumDTO.getAlbumDestaque() != null ? albumDTO.getAlbumDestaque() : false);
         albumModel.setAlbumNumeroFaixas(albumDTO.getAlbumNumeroFaixas());
@@ -57,7 +67,8 @@ public class AlbumService {
         // Processar a imagem
         MultipartFile imagem = albumDTO.getAlbumAvatar();
         if (imagem != null && !imagem.isEmpty()) {
-            String caminhoImagem = salvarImagem(imagem, "bandas");
+            String caminhoImagem = salvarImagem(imagem, "albuns");
+            uploadStorageService.registrarNovoArquivo(caminhoImagem);
             albumModel.setAlbumImagem(caminhoImagem);
         }
 
@@ -66,22 +77,12 @@ public class AlbumService {
         albumRepository.save(albumModel);
     }
 
+    /**
+     * Processa e salva a imagem do álbum usando o utilitário central (validação,
+     * redimensionamento e padronização de formato).
+     */
     private String salvarImagem(MultipartFile file, String subPasta) throws IOException {
-        // Gerar nome único para o arquivo
-        String nomeOriginal = file.getOriginalFilename();
-        String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
-        String nomeArquivo = UUID.randomUUID().toString() + extensao;
-
-        // Criar diretório se não existir
-        Path caminhoCompleto = Paths.get(uploadDir + subPasta);
-        Files.createDirectories(caminhoCompleto);
-
-        // Salvar arquivo
-        Path caminhoArquivo = caminhoCompleto.resolve(nomeArquivo);
-        Files.copy(file.getInputStream(), caminhoArquivo);
-
-        // Retornar o caminho relativo para salvar no banco
-        return "/uploads/" + subPasta + "/" + nomeArquivo;
+        return ImageUploadUtil.processarESalvar(file, uploadDir, subPasta);
     }
 
     @Value("${app.upload.dir}")
@@ -93,18 +94,27 @@ public class AlbumService {
 
     @Transactional
     public boolean excluirAlbum(Long id) {
-        albumRepository.deleteById(id);
+        // O álbum tem cascade ALL sobre suas músicas: ao excluí-lo, o Hibernate apaga
+        // as músicas em cascata. Como essas músicas podem estar em repertório/setlist
+        // (FK NOT NULL), limpamos essas dependências antes para não violar a integridade.
+        AlbumModel album = albumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Álbum não encontrado com ID: " + id));
+
+        if (album.getMusicas() != null) {
+            for (MusicaModel m : album.getMusicas()) {
+                musicaService.removerDependenciasDeMusica(m.getMusicaId());
+            }
+        }
+
+        albumRepository.delete(album);
+        uploadStorageService.agendarExclusaoAposCommit(album.getAlbumImagem());
         return true;
     }
 
+    @Transactional(readOnly = true)
     public AlbumDTO obterAlbumCompleto(Long albumId) {
-        Optional<AlbumModel> optionalAlbumModel = albumRepository.findById(albumId);
-
-        if (optionalAlbumModel.isEmpty()) {
-            throw new RuntimeException("Álbum não encontrado");
-        }
-
-        AlbumModel album = optionalAlbumModel.get();
+        AlbumModel album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new RuntimeException("Álbum não encontrado com ID: " + albumId));
 
         AlbumDTO albumDTO = new AlbumDTO();
         albumDTO.setAlbumId(album.getAlbumId());
@@ -138,13 +148,9 @@ public class AlbumService {
 
     @Transactional
     public void alterarAlbum(AlbumDTO albumDto) throws IOException {
-        Optional<AlbumModel> optionalAlbumModel = albumRepository.findById(albumDto.getAlbumId());
-
-        if (optionalAlbumModel.isEmpty()) {
-            throw new RuntimeException("Álbum não encontrado");
-        }
-
-        AlbumModel albumModel = optionalAlbumModel.get();
+        AlbumModel albumModel = albumRepository.findById(albumDto.getAlbumId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Álbum não encontrado com ID: " + albumDto.getAlbumId()));
 
         // Atualizar campos básicos
         albumModel.setAlbumNome(albumDto.getAlbumNome());
@@ -164,7 +170,9 @@ public class AlbumService {
         // Processar imagem (apenas se uma nova for enviada)
         MultipartFile imagem = albumDto.getAlbumAvatar();
         if (imagem != null && !imagem.isEmpty()) {
+            String imagemAntiga = albumModel.getAlbumImagem();
             String caminhoImagem = salvarImagem(imagem, "albuns");
+            uploadStorageService.registrarSubstituicao(imagemAntiga, caminhoImagem);
             albumModel.setAlbumImagem(caminhoImagem);
         }
 
@@ -205,6 +213,7 @@ public class AlbumService {
         MultipartFile imagem = albumDto.getAlbumAvatar();
         if (imagem != null && !imagem.isEmpty()) {
             String caminhoImagem = salvarImagem(imagem, "albuns");
+            uploadStorageService.registrarNovoArquivo(caminhoImagem);
             album.setAlbumImagem(caminhoImagem);
         }
 

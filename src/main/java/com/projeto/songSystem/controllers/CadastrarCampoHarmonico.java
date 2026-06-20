@@ -3,6 +3,8 @@ package com.projeto.songSystem.controllers;
 import com.projeto.songSystem.dto.TeoriaCampoHarmonicoDTO;
 import com.projeto.songSystem.services.TeoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +23,15 @@ public class CadastrarCampoHarmonico {
     private TeoriaService teoriaService;
 
     @GetMapping("/teoria/campo-harmonico/cadastrar")
-    public String exibirFormulario(Model model) {
+    public String exibirFormulario(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         List<String> tons = getTons();
         model.addAttribute("tons", tons);
         model.addAttribute("campo", new TeoriaCampoHarmonicoDTO());
@@ -38,7 +48,10 @@ public class CadastrarCampoHarmonico {
             @RequestParam String acorde5, @RequestParam String tipo5, @RequestParam String funcao5, @RequestParam(required = false) String notas5,
             @RequestParam String acorde6, @RequestParam String tipo6, @RequestParam String funcao6, @RequestParam(required = false) String notas6,
             @RequestParam String acorde7, @RequestParam String tipo7, @RequestParam String funcao7, @RequestParam(required = false) String notas7,
+            HttpSession session,
             RedirectAttributes attributes) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
 
         try {
             // Salvar cada acorde

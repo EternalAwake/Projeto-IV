@@ -18,6 +18,9 @@ public class TecnicaService {
     @Autowired
     private TecnicaRepository tecnicaRepository;
 
+    @Autowired
+    private UploadStorageService uploadStorageService;
+
     public List<TecnicaDTO> listarTodasTecnicas() {
         return tecnicaRepository.findAllByOrderByNomeAsc()
                 .stream()
@@ -33,10 +36,16 @@ public class TecnicaService {
     }
 
     public List<TecnicaDTO> listarTecnicasPorNivel(String nivel) {
-        return tecnicaRepository.findByNivelOrderByNomeAsc(nivel)
-                .stream()
-                .map(this::converterParaDTO)
-                .collect(Collectors.toList());
+        try {
+            Nivel nivelEnum = Nivel.valueOf(nivel.toUpperCase());
+            return tecnicaRepository.findByNivelOrderByNomeAsc(nivelEnum)
+                    .stream()
+                    .map(this::converterParaDTO)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            // Nível inválido — retornar lista vazia em vez de lançar exceção
+            return java.util.Collections.emptyList();
+        }
     }
 
     public List<String> listarCategorias() {
@@ -73,7 +82,11 @@ public class TecnicaService {
         tecnica.setDescricao(dto.getDescricao());
         tecnica.setComoFazer(dto.getComoFazer());
         tecnica.setDicas(dto.getDicas());
+        String imagemAntiga = tecnica.getImagem();
         tecnica.setImagem(dto.getImagem());
+        if (!java.util.Objects.equals(imagemAntiga, dto.getImagem())) {
+            uploadStorageService.agendarExclusaoAposCommit(imagemAntiga);
+        }
         tecnica.setVideoUrl(dto.getVideoUrl());
         tecnica.setNivel(dto.getNivel());
         tecnica.setExercicios(dto.getExercicios());
@@ -90,10 +103,10 @@ public class TecnicaService {
 
     @Transactional
     public void excluirTecnica(Long id) {
-        if (!tecnicaRepository.existsById(id)) {
-            throw new RuntimeException("Técnica não encontrada com ID: " + id);
-        }
-        tecnicaRepository.deleteById(id);
+        TecnicaModel tecnica = tecnicaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Técnica não encontrada com ID: " + id));
+        tecnicaRepository.delete(tecnica);
+        uploadStorageService.agendarExclusaoAposCommit(tecnica.getImagem());
     }
 
     public List<TecnicaDTO> filtrarTecnicas(String categoria, String nivel, String busca) {

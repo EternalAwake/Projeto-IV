@@ -23,12 +23,13 @@ public class VisualizarAlbumController {
     @GetMapping("/biblioteca/albuns/visualizar/{id}")
     public String exibirAlbum(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         AlbumDTO album = albumService.obterAlbumCompleto(id);
         model.addAttribute("album", album);
@@ -37,13 +38,16 @@ public class VisualizarAlbumController {
     }
 
     @DeleteMapping("/biblioteca/albuns/visualizar/excluir/{id}")
-    public ResponseEntity<String> excluirAlbum(@PathVariable Long id) {
+    public ResponseEntity<String> excluirAlbum(@PathVariable Long id, HttpSession session) {
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
+        }
         boolean retorno = albumService.excluirAlbum(id);
-
-        if(retorno) {
+        if (retorno) {
             return ResponseEntity.ok("Álbum excluído com sucesso.");
         }
-
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Erro ao excluir álbum.");
     }

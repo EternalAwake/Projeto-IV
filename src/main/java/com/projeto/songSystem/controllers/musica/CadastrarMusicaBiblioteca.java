@@ -8,6 +8,7 @@ import com.projeto.songSystem.services.BandaService;
 import com.projeto.songSystem.services.MusicaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +31,17 @@ public class CadastrarMusicaBiblioteca {
 
     @GetMapping("/biblioteca/cadastrarmusica")
     public String exibirCadastrarMusica(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
 
         // Buscar listas para os selects
-        List<BandaModel> bandas = bandaService.listarBandas();
+        List<BandaModel> bandas = bandaService.listarBandasBasicas();
         List<AlbumModel> albuns = albumService.listarAlbuns();
 
         model.addAttribute("bandas", bandas);

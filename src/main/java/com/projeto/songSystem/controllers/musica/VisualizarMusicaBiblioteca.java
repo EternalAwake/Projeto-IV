@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,14 @@ public class VisualizarMusicaBiblioteca {
 
     @GetMapping("/biblioteca/visualizarmusica/{id}")
     public String visualizarMusica(Model model, @PathVariable Long id, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
 
         // Buscar a música com todos os dados (banda e álbum)
         MusicaDTO musica = musicaService.obterMusicaComDadosCompletos(id);
@@ -28,7 +37,12 @@ public class VisualizarMusicaBiblioteca {
     }
 
     @DeleteMapping("/biblioteca/musicas/visualizar/excluir/{id}")
-    public ResponseEntity<String> excluirMusica(@PathVariable Long id) {
+    public ResponseEntity<String> excluirMusica(@PathVariable Long id, HttpSession session) {
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
+        }
         try {
             musicaService.excluirMusica(id);
             return ResponseEntity.ok("Música excluída com sucesso!");

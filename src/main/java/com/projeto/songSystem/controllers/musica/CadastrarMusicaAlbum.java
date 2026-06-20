@@ -6,6 +6,7 @@ import com.projeto.songSystem.services.AlbumService;
 import com.projeto.songSystem.services.MusicaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,15 @@ public class CadastrarMusicaAlbum {
     private MusicaService musicaService;
 
     @GetMapping("/biblioteca/albuns/visualizar/cadastrarmusica/{albumId}")
-    public String exibirCadastroMusicaPorAlbum(Model model, @PathVariable Long albumId) {
+    public String exibirCadastroMusicaPorAlbum(Model model, @PathVariable Long albumId, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
 
         AlbumDTO album = albumService.obterAlbumCompleto(albumId);
 

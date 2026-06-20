@@ -51,7 +51,7 @@ public class BibliotecaController {
         model.addAttribute("totalAlbuns", totalAlbuns);
         model.addAttribute("totalMusicas", totalMusicas);
 
-        List<MusicaModel> musicasDestaque = musicaService.obterMusicasEmDestque();
+        List<MusicaModel> musicasDestaque = musicaService.obterMusicasEmDestaque();
         List<BandaModel> bandasDestaque = bandaService.obterBandasEmDestaque();
         List<AlbumModel> albunsDestaque = albumService.obterAlbunsEmDestaque();
 
@@ -63,7 +63,11 @@ public class BibliotecaController {
     }
 
     @DeleteMapping("/biblioteca/musicas/excluir/{id}")
-    public ResponseEntity<String> excluirMusica(@PathVariable Long id) {
+    public ResponseEntity<String> excluirMusica(@PathVariable Long id, HttpSession session) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
+        }
         try {
             musicaService.excluirMusica(id);
             return ResponseEntity.ok("Música excluída com sucesso!");

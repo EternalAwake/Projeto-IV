@@ -31,17 +31,18 @@ public class AlterarMusicaBanda {
     @GetMapping("/biblioteca/bandas/visualizar/visualizarmusica/alterarmusica/{id}")
     public String exibirAlterarMusica(Model model, HttpSession session, @PathVariable Long id) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         MusicaDTO musica = musicaService.obterMusicaComDadosCompletos(id);
 
         List<AlbumModel> albuns = albumService.listarAlbuns();
-        List<BandaModel> bandas = bandaService.listarBandas();
+        List<BandaModel> bandas = bandaService.listarBandasBasicas();
 
         model.addAttribute("musica", musica);
         model.addAttribute("albuns", albuns);

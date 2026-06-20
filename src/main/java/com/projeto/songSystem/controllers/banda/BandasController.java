@@ -33,12 +33,13 @@ public class BandasController {
     @GetMapping("/biblioteca/bandas")
     public String exbirBandas(Model model, HttpSession session) {
 
-        //Sessão
-        /*UsuarioModel usuarioDto = (UsuarioModel) session.getAttribute("usuarioDto");
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
         if (usuarioDto == null) {
             return "redirect:/login";
         }
-        model.addAttribute("usuarioDto", usuarioDto);*/
+        model.addAttribute("usuarioDTO", usuarioDto);
 
         long totalBandas = bandaService.obterQtdBandas();
         long totalAlbuns = albumService.obterQtdAlbuns();
@@ -55,14 +56,16 @@ public class BandasController {
     }
 
     @DeleteMapping("/biblioteca/bandas/excluir/{id}")
-    public ResponseEntity<String> excluirBanda(@PathVariable Long id) {
-
+    public ResponseEntity<String> excluirBanda(@PathVariable Long id, HttpSession session) {
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
+        }
         boolean retorno = bandaService.excluirBanda(id);
-
-        if(retorno) {
+        if (retorno) {
             return ResponseEntity.ok("Banda excluída com sucesso.");
         }
-
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Erro ao excluir banda.");
     }

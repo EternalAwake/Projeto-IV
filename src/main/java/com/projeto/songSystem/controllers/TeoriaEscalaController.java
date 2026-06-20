@@ -3,7 +3,10 @@ package com.projeto.songSystem.controllers;
 import com.projeto.songSystem.dto.TeoriaEscalaDTO;
 import com.projeto.songSystem.services.TeoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +22,15 @@ public class TeoriaEscalaController {
     private TeoriaService teoriaService;
 
     @GetMapping
-    public String listarEscalas(Model model) {
+    public String listarEscalas(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         List<TeoriaEscalaDTO> escalas = teoriaService.listarTodasEscalas();
         List<String> tiposEscala = teoriaService.listarTiposEscala();
 
@@ -36,18 +47,34 @@ public class TeoriaEscalaController {
         model.addAttribute("totalMenores", totalMenores);
         model.addAttribute("totalPentatonicas", totalPentatonicas);
 
-        return "escalas";
+        return "Escalas";
     }
 
     @GetMapping("/{id}")
-    public String visualizarEscala(@PathVariable Long id, Model model) {
+    public String visualizarEscala(@PathVariable Long id, Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         TeoriaEscalaDTO escala = teoriaService.buscarEscalaPorId(id);
         model.addAttribute("escala", escala);
         return "VisualizarEscala";
     }
 
     @GetMapping("/cadastrar")
-    public String exibirFormularioCadastro(Model model) {
+    public String exibirFormularioCadastro(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         model.addAttribute("escala", new TeoriaEscalaDTO());
         model.addAttribute("tipos", List.of("Maior", "Menor Natural", "Menor Harmônica", "Menor Melódica", "Pentatônica", "Blues"));
         model.addAttribute("tons", List.of("C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"));
@@ -56,7 +83,10 @@ public class TeoriaEscalaController {
 
     @PostMapping("/salvar")
     public String salvarEscala(@ModelAttribute TeoriaEscalaDTO escala,
+                               HttpSession session,
                                RedirectAttributes attributes) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
         try {
             teoriaService.salvarEscala(escala);
             attributes.addFlashAttribute("mensagem", "Escala " + escala.getNome() + " cadastrada com sucesso!");
@@ -67,7 +97,15 @@ public class TeoriaEscalaController {
     }
 
     @GetMapping("/editar/{id}")
-    public String editarEscala(@PathVariable Long id, Model model) {
+    public String editarEscala(@PathVariable Long id, Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
         TeoriaEscalaDTO escala = teoriaService.buscarEscalaPorId(id);
         model.addAttribute("escala", escala);
         model.addAttribute("tipos", List.of("Maior", "Menor Natural", "Menor Harmônica", "Menor Melódica", "Pentatônica", "Blues"));
@@ -77,7 +115,10 @@ public class TeoriaEscalaController {
 
     @PostMapping("/atualizar")
     public String atualizarEscala(@ModelAttribute TeoriaEscalaDTO escala,
+                                  HttpSession session,
                                   RedirectAttributes attributes) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return "redirect:/login";
         try {
             teoriaService.atualizarEscala(escala);
             attributes.addFlashAttribute("mensagem", "Escala " + escala.getNome() + " atualizada com sucesso!");
@@ -89,7 +130,9 @@ public class TeoriaEscalaController {
 
     @DeleteMapping("/excluir/{id}")
     @ResponseBody
-    public ResponseEntity<String> excluirEscala(@PathVariable Long id) {
+    public ResponseEntity<String> excluirEscala(@PathVariable Long id, HttpSession session) {
+        UsuarioDTO usuarioDto = (UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sessão expirada.");
         try {
             teoriaService.excluirEscala(id);
             return ResponseEntity.ok("Escala excluída com sucesso");

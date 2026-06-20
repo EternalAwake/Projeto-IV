@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuários - Song System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { height: 100vh; margin: 0; overflow: hidden; }
+        .app-layout { height: 100vh; display: flex; flex-direction: column; }
+        .content-wrapper { display: flex; flex: 1; overflow: hidden; }
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 30px; background-color: #f8f9fa; }
+        .sidebar { width: 250px; flex-shrink: 0; overflow-y: auto; border-right: 1px solid rgba(255,255,255,0.1); }
+        .sidebar .nav-link { border-radius: 0.5rem; transition: all 0.2s ease; padding: 0.625rem 1rem; margin-bottom: 0.25rem; color: #e9ecef !important; }
+        .sidebar .nav-link:hover { background-color: rgba(255,255,255,0.1); color: white !important; }
+        .sidebar .nav-link.active { background-color: #0d6efd !important; color: white !important; }
+        .sidebar .nav-link i { width: 24px; font-size: 1.1rem; }
+        .sidebar .border-secondary { border-color: rgba(255,255,255,0.1) !important; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        .badge-admin   { background: #dc3545; color: white; font-size: .7rem; padding: 3px 8px; border-radius: 20px; }
+        .badge-user    { background: #6c757d; color: white; font-size: .7rem; padding: 3px 8px; border-radius: 20px; }
+        .badge-ativo   { background: #198754; color: white; font-size: .7rem; padding: 3px 8px; border-radius: 20px; }
+        .badge-inativo { background: #6c757d; color: white; font-size: .7rem; padding: 3px 8px; border-radius: 20px; }
+
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 1rem; flex-shrink: 0;
+        }
+        .user-avatar.admin-avatar { background: linear-gradient(135deg, #dc3545, #c0392b); }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- HEADER -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" th:href="@{/inicio}">
+                Song System - Repertório e Estudo Musical
+            </a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a th:href="@{/logout}" class="btn btn-outline-light d-flex align-items-center" title="Sair do Sistema">
+                        <i class="bi bi-box-arrow-right me-2 ms-2 d-none d-lg-inline"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- WRAPPER -->
+    <div class="content-wrapper">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar d-flex flex-column p-3 text-white bg-dark">
+            <ul class="nav nav-pills flex-column mb-auto mt-2">
+                <li class="nav-item">
+                    <a th:href="@{/inicio}" class="nav-link text-white">
+                        <i class="bi bi-house-door-fill me-2"></i> Início
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/repertorio}" class="nav-link text-white">
+                        <i class="bi bi-list-ol me-2"></i> Repertório
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/tecnicas}" class="nav-link text-white">
+                        <i class="bi bi-hand-index-thumb me-2"></i> Técnicas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/teoria}" class="nav-link text-white">
+                        <i class="bi bi-book-half me-2"></i> Teoria
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/biblioteca}" class="nav-link text-white">
+                        <i class="bi bi-music-note-list me-2"></i> Biblioteca Musical
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Menu inferior -->
+            <ul class="nav nav-pills flex-column mt-auto pt-3 border-top border-secondary">
+                <li class="nav-item">
+                    <a th:href="@{/admin/usuarios}" class="nav-link text-white active">
+                        <i class="bi bi-people me-2"></i> Usuários
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/perfil}" class="nav-link text-white">
+                        <i class="bi bi-person-circle me-2"></i> Meu Perfil
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <div class="container-fluid px-4" style="max-width: 1000px;">
+
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/inicio}" class="text-decoration-none text-primary">Início</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Usuários</li>
+                    </ol>
+                </nav>
+
+                <!-- Alertas dinâmicos (via JS) -->
+                <div id="alertBox"></div>
+
+                <!-- Cabeçalho da página -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h4 class="fw-bold mb-1">
+                            <i class="bi bi-people me-2 text-primary"></i>Gerenciar Usuários
+                        </h4>
+                        <p class="text-muted mb-0">
+                            <span th:text="${totalUsuarios}">0</span> usuário(s) cadastrado(s)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tabela de usuários -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4 py-3">Usuário</th>
+                                        <th>E-mail</th>
+                                        <th>Cadastro</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th class="text-end pe-4">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="u : ${usuarios}" th:id="'row-' + ${u.id}">
+
+                                        <!-- Coluna: nome e username -->
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="user-avatar"
+                                                     th:classappend="${u.role != null and u.role.name() == 'ADMIN'} ? 'admin-avatar' : ''"
+                                                     th:text="${#strings.substring(u.nome != null ? u.nome : u.username, 0, 1).toUpperCase()}">
+                                                    U
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold" th:text="${u.nome ?: u.username}">Nome</div>
+                                                    <div class="text-muted small" th:text="'@' + ${u.username}">@user</div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- Coluna: e-mail -->
+                                        <td class="text-muted small" th:text="${u.email}">email</td>
+
+                                        <!-- Coluna: data de cadastro -->
+                                        <td class="text-muted small"
+                                            th:text="${u.dataCadastro != null ? #temporals.format(u.dataCadastro, 'dd/MM/yyyy') : '-'}">
+                                            --/--/----
+                                        </td>
+
+                                        <!-- Coluna: role -->
+                                        <td th:id="'role-badge-' + ${u.id}">
+                                            <span th:if="${u.role != null and u.role.name() == 'ADMIN'}" class="badge-admin">Admin</span>
+                                            <span th:if="${u.role == null or u.role.name() == 'USER'}"  class="badge-user">User</span>
+                                        </td>
+
+                                        <!-- Coluna: status ativo/inativo -->
+                                        <td>
+                                            <span th:if="${u.ativo}"  class="badge-ativo">Ativo</span>
+                                            <span th:if="${!u.ativo}" class="badge-inativo">Inativo</span>
+                                        </td>
+
+                                        <!-- Coluna: ações -->
+                                        <td class="text-end pe-4">
+                                            <div class="d-flex gap-2 justify-content-end flex-wrap" th:id="'actions-' + ${u.id}">
+
+                                                <!-- Próprio admin logado: sem ações -->
+                                                <span th:if="${u.id == usuarioDTO.id}"
+                                                      class="text-muted small align-self-center">Você</span>
+
+                                                <!-- Admin principal fixo: sem ações -->
+                                                <span th:if="${u.id != usuarioDTO.id and u.username == 'admin'}"
+                                                      class="text-muted small align-self-center">Admin principal</span>
+
+                                                <!-- Outros usuários -->
+                                                <th:block th:if="${u.id != usuarioDTO.id and u.username != 'admin'}">
+
+                                                    <!-- Redefinir senha (somente contas USER) -->
+                                                    <button th:if="${u.role == null or u.role.name() == 'USER'}"
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-primary rounded-3 btn-reset-senha"
+                                                            data-action="reset-senha"
+                                                            th:data-id="${u.id}"
+                                                            th:data-nome="${u.nome ?: u.username}"
+                                                            onclick="abrirResetSenha(this)">
+                                                        <i class="bi bi-key me-1"></i>Redefinir senha
+                                                    </button>
+
+                                                    <!-- Tornar admin (só para USER) -->
+                                                    <button th:if="${u.role == null or u.role.name() == 'USER'}"
+                                                            class="btn btn-sm btn-outline-warning rounded-3"
+                                                            th:data-id="${u.id}"
+                                                            th:data-nome="${u.nome ?: u.username}"
+                                                            onclick="tornarAdmin(this)">
+                                                        <i class="bi bi-shield-plus me-1"></i>Tornar Admin
+                                                    </button>
+
+                                                    <!-- Tirar admin (só para ADMINs que não são o principal) -->
+                                                    <button th:if="${u.role != null and u.role.name() == 'ADMIN'}"
+                                                            class="btn btn-sm btn-outline-secondary rounded-3"
+                                                            th:data-id="${u.id}"
+                                                            th:data-nome="${u.nome ?: u.username}"
+                                                            onclick="removerAdmin(this)">
+                                                        <i class="bi bi-shield-minus me-1"></i>Tirar Admin
+                                                    </button>
+
+                                                    <!-- Excluir -->
+                                                    <button class="btn btn-sm btn-outline-danger rounded-3"
+                                                            th:data-id="${u.id}"
+                                                            th:data-nome="${u.nome ?: u.username}"
+                                                            onclick="confirmarExclusao(this)">
+                                                        <i class="bi bi-trash me-1"></i>Excluir
+                                                    </button>
+
+                                                </th:block>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                                        <td colspan="6" class="text-center text-muted py-5">
+                                            <i class="bi bi-people display-6 d-block mb-2 opacity-25"></i>
+                                            Nenhum usuário encontrado.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Excluir usuário
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-0">
+                    Tem certeza que deseja excluir o usuário <strong id="nomeExcluir"></strong>?
+                    Todos os dados (repertório, setlists) serão removidos permanentemente.
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger rounded-3" id="btnConfirmarExcluir">
+                    <i class="bi bi-trash me-1"></i>Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de redefinição de senha -->
+<div class="modal fade" id="modalResetSenha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form id="formResetSenha">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-key text-primary me-2"></i>Redefinir senha
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">
+                        Defina uma nova senha para <strong id="nomeResetSenha"></strong>.
+                        Esta ação não está disponível para contas administradoras.
+                    </p>
+
+                    <div id="erroResetSenha" class="alert alert-danger d-none py-2" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label for="novaSenhaAdmin" class="form-label fw-semibold">Nova senha</label>
+                        <input type="password" class="form-control rounded-3" id="novaSenhaAdmin"
+                               minlength="8" maxlength="128" autocomplete="new-password" required>
+                        <div class="form-text">Use entre 8 e 128 caracteres.</div>
+                    </div>
+
+                    <div>
+                        <label for="confirmarSenhaAdmin" class="form-label fw-semibold">Confirmar nova senha</label>
+                        <input type="password" class="form-control rounded-3" id="confirmarSenhaAdmin"
+                               minlength="8" maxlength="128" autocomplete="new-password" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary rounded-3" id="btnSalvarResetSenha">
+                        <i class="bi bi-check-lg me-1"></i>Salvar nova senha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let idParaExcluir = null;
+    const modal = new bootstrap.Modal(document.getElementById('modalExcluir'));
+    let idParaResetSenha = null;
+    let nomeParaResetSenha = '';
+    const modalResetSenha = new bootstrap.Modal(document.getElementById('modalResetSenha'));
+
+    function abrirResetSenha(btn) {
+        idParaResetSenha = btn.dataset.id;
+        nomeParaResetSenha = btn.dataset.nome;
+        document.getElementById('nomeResetSenha').textContent = nomeParaResetSenha;
+        document.getElementById('novaSenhaAdmin').value = '';
+        document.getElementById('confirmarSenhaAdmin').value = '';
+        const erro = document.getElementById('erroResetSenha');
+        erro.textContent = '';
+        erro.classList.add('d-none');
+        modalResetSenha.show();
+    }
+
+    document.getElementById('formResetSenha').addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (!idParaResetSenha) return;
+
+        const novaSenha = document.getElementById('novaSenhaAdmin').value;
+        const confirmar = document.getElementById('confirmarSenhaAdmin').value;
+        const erro = document.getElementById('erroResetSenha');
+        const btn = document.getElementById('btnSalvarResetSenha');
+
+        erro.textContent = '';
+        erro.classList.add('d-none');
+
+        if (novaSenha.length < 8 || novaSenha.length > 128) {
+            erro.textContent = 'A senha deve ter entre 8 e 128 caracteres.';
+            erro.classList.remove('d-none');
+            return;
+        }
+        if (novaSenha !== confirmar) {
+            erro.textContent = 'A confirmação da nova senha não confere.';
+            erro.classList.remove('d-none');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Salvando...';
+
+        const dados = new URLSearchParams();
+        dados.set('novaSenha', novaSenha);
+        dados.set('confirmarNovaSenha', confirmar);
+
+        fetch('/admin/usuarios/' + idParaResetSenha + '/redefinir-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: dados.toString()
+        })
+            .then(r => r.text())
+            .then(resp => {
+                if (resp === 'ok') {
+                    modalResetSenha.hide();
+                    showAlert('success', 'Senha de "' + nomeParaResetSenha + '" redefinida com sucesso.');
+                    idParaResetSenha = null;
+                    nomeParaResetSenha = '';
+                } else {
+                    erro.textContent = resp.startsWith('erro:')
+                        ? resp.slice(5)
+                        : 'Não foi possível redefinir a senha.';
+                    erro.classList.remove('d-none');
+                }
+            })
+            .catch(() => {
+                erro.textContent = 'Erro de conexão.';
+                erro.classList.remove('d-none');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Salvar nova senha';
+            });
+    });
+
+    function confirmarExclusao(btn) {
+        idParaExcluir = btn.dataset.id;
+        document.getElementById('nomeExcluir').textContent = btn.dataset.nome;
+        modal.show();
+    }
+
+    document.getElementById('btnConfirmarExcluir').addEventListener('click', function () {
+        if (!idParaExcluir) return;
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Excluindo...';
+
+        fetch('/admin/usuarios/' + idParaExcluir, { method: 'DELETE' })
+            .then(r => r.text())
+            .then(resp => {
+                modal.hide();
+                if (resp === 'ok') {
+                    document.getElementById('row-' + idParaExcluir).remove();
+                    showAlert('success', 'Usuário excluído com sucesso.');
+                } else {
+                    showAlert('danger', resp.startsWith('erro:') ? resp.slice(5) : 'Erro ao excluir usuário.');
+                }
+            })
+            .catch(() => { modal.hide(); showAlert('danger', 'Erro de conexão.'); })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-trash me-1"></i>Excluir';
+                idParaExcluir = null;
+            });
+    });
+
+    function tornarAdmin(btn) {
+        const id   = btn.dataset.id;
+        const nome = btn.dataset.nome;
+        if (!confirm('Tornar "' + nome + '" administrador?')) return;
+        btn.disabled = true;
+
+        fetch('/admin/usuarios/' + id + '/tornar-admin', { method: 'POST' })
+            .then(r => r.text())
+            .then(resp => {
+                if (resp === 'ok') {
+                    document.getElementById('role-badge-' + id).innerHTML = '<span class="badge-admin">Admin</span>';
+                    const actions = document.getElementById('actions-' + id);
+                    const resetBtn = actions.querySelector('[data-action="reset-senha"]');
+                    if (resetBtn) resetBtn.remove();
+                    btn.remove();
+                    const tirarBtn = document.createElement('button');
+                    tirarBtn.className = 'btn btn-sm btn-outline-secondary rounded-3';
+                    tirarBtn.dataset.id   = id;
+                    tirarBtn.dataset.nome = nome;
+                    tirarBtn.setAttribute('onclick', 'removerAdmin(this)');
+                    tirarBtn.innerHTML = '<i class="bi bi-shield-minus me-1"></i>Tirar Admin';
+                    actions.prepend(tirarBtn);
+                    const avatar = document.querySelector('#row-' + id + ' .user-avatar');
+                    if (avatar) avatar.classList.add('admin-avatar');
+                    showAlert('success', '"' + nome + '" agora é administrador.');
+                } else {
+                    showAlert('danger', resp.startsWith('erro:') ? resp.slice(5) : 'Erro ao promover usuário.');
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => { showAlert('danger', 'Erro de conexão.'); btn.disabled = false; });
+    }
+
+    function removerAdmin(btn) {
+        const id   = btn.dataset.id;
+        const nome = btn.dataset.nome;
+        if (!confirm('Remover permissão de administrador de "' + nome + '"?')) return;
+        btn.disabled = true;
+
+        fetch('/admin/usuarios/' + id + '/remover-admin', { method: 'POST' })
+            .then(r => r.text())
+            .then(resp => {
+                if (resp === 'ok') {
+                    document.getElementById('role-badge-' + id).innerHTML = '<span class="badge-user">User</span>';
+                    const actions = document.getElementById('actions-' + id);
+                    btn.remove();
+                    const promoverBtn = document.createElement('button');
+                    promoverBtn.className = 'btn btn-sm btn-outline-warning rounded-3';
+                    promoverBtn.dataset.id   = id;
+                    promoverBtn.dataset.nome = nome;
+                    promoverBtn.setAttribute('onclick', 'tornarAdmin(this)');
+                    promoverBtn.innerHTML = '<i class="bi bi-shield-plus me-1"></i>Tornar Admin';
+                    actions.prepend(promoverBtn);
+
+                    const resetBtn = document.createElement('button');
+                    resetBtn.type = 'button';
+                    resetBtn.className = 'btn btn-sm btn-outline-primary rounded-3 btn-reset-senha';
+                    resetBtn.dataset.action = 'reset-senha';
+                    resetBtn.dataset.id = id;
+                    resetBtn.dataset.nome = nome;
+                    resetBtn.setAttribute('onclick', 'abrirResetSenha(this)');
+                    resetBtn.innerHTML = '<i class="bi bi-key me-1"></i>Redefinir senha';
+                    promoverBtn.insertAdjacentElement('afterend', resetBtn);
+
+                    const avatar = document.querySelector('#row-' + id + ' .user-avatar');
+                    if (avatar) avatar.classList.remove('admin-avatar');
+                    showAlert('success', 'Permissão de admin removida de "' + nome + '".');
+                } else {
+                    showAlert('danger', resp.startsWith('erro:') ? resp.slice(5) : 'Erro ao rebaixar usuário.');
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => { showAlert('danger', 'Erro de conexão.'); btn.disabled = false; });
+    }
+
+    function showAlert(type, msg) {
+        const box = document.getElementById('alertBox');
+        box.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i>
+                ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+</script>
+</body>
+</html>

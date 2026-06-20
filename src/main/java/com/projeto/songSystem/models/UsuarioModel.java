@@ -1,5 +1,6 @@
 package com.projeto.songSystem.models;
 
+import com.projeto.songSystem.models.enums.Role;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +20,8 @@ public class UsuarioModel {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false)
+    // Pode ser null para o admin antes do primeiro login (setup inicial)
+    @Column(nullable = true)
     private String senha;
 
     @Column(length = 100)
@@ -33,6 +35,18 @@ public class UsuarioModel {
 
     private Boolean ativo = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true, length = 10)
+    private Role role = Role.USER;
+
+    // Recuperação de senha por pergunta secreta
+    @Column(name = "pergunta_secreta", length = 200)
+    private String perguntaSecreta;
+
+    // Armazenado como hash SHA-256 com salt (mesmo esquema da senha)
+    @Column(name = "resposta_secreta")
+    private String respostaSecreta;
+
     // Relacionamentos
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RepertorioItemModel> repertorio = new ArrayList<>();
@@ -40,87 +54,53 @@ public class UsuarioModel {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SetlistModel> setlists = new ArrayList<>();
 
-    // Construtor padrão
     public UsuarioModel() {}
 
     // Getters e Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public String getUsername() {
-        return username;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public LocalDateTime getDataCadastro() { return dataCadastro; }
+    public void setDataCadastro(LocalDateTime dataCadastro) { this.dataCadastro = dataCadastro; }
 
-    public String getSenha() {
-        return senha;
-    }
+    public LocalDateTime getDataAtualizacao() { return dataAtualizacao; }
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
 
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
 
-    public String getNome() {
-        return nome;
+    public Role getRole() {
+        // Usuários criados antes da coluna existir ficam com null no banco — defaulta para USER
+        return role != null ? role : Role.USER;
     }
+    public void setRole(Role role) { this.role = role; }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public String getPerguntaSecreta() { return perguntaSecreta; }
+    public void setPerguntaSecreta(String perguntaSecreta) { this.perguntaSecreta = perguntaSecreta; }
 
-    public LocalDateTime getDataCadastro() {
-        return dataCadastro;
-    }
+    public String getRespostaSecreta() { return respostaSecreta; }
+    public void setRespostaSecreta(String respostaSecreta) { this.respostaSecreta = respostaSecreta; }
 
-    public void setDataCadastro(LocalDateTime dataCadastro) {
-        this.dataCadastro = dataCadastro;
-    }
+    public List<RepertorioItemModel> getRepertorio() { return repertorio; }
+    public void setRepertorio(List<RepertorioItemModel> repertorio) { this.repertorio = repertorio; }
 
-    public LocalDateTime getDataAtualizacao() {
-        return dataAtualizacao;
-    }
+    public List<SetlistModel> getSetlists() { return setlists; }
+    public void setSetlists(List<SetlistModel> setlists) { this.setlists = setlists; }
 
-    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
-    }
-
-    public Boolean getAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(Boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public List<RepertorioItemModel> getRepertorio() {
-        return repertorio;
-    }
-
-    public void setRepertorio(List<RepertorioItemModel> repertorio) {
-        this.repertorio = repertorio;
-    }
-
-    public List<SetlistModel> getSetlists() {
-        return setlists;
-    }
-
-    public void setSetlists(List<SetlistModel> setlists) {
-        this.setlists = setlists;
+    /** Verdadeiro se o admin ainda não definiu sua senha (primeiro acesso). */
+    public boolean isPrimeiroAcesso() {
+        return senha == null || senha.isBlank();
     }
 }

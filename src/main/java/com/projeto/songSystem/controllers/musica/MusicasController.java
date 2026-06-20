@@ -8,6 +8,8 @@ import com.projeto.songSystem.services.MusicaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,10 +33,18 @@ public class MusicasController {
     private AlbumService albumService;
 
     @GetMapping("/biblioteca/musicas")
-    public String listarMusicas(Model model) {
+    public String listarMusicas(Model model, HttpSession session) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
 
         List<MusicaModel> musicas = musicaService.listarMusicas();
-        List<BandaModel> todasBandas = bandaService.listarBandas();
+        List<BandaModel> todasBandas = bandaService.listarBandasBasicas();
 
         model.addAttribute("musicas", musicas);
         model.addAttribute("todasBandas", todasBandas);

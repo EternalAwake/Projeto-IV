@@ -7,6 +7,7 @@ import com.projeto.songSystem.services.AlbumService;
 import com.projeto.songSystem.services.BandaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.projeto.songSystem.dto.UsuarioDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,14 @@ public class CadastrarAlbumBanda {
 
     @GetMapping("/biblioteca/bandas/visualizar/cadastraralbum/{id}")
     public String exibirAlbuns(Model model, HttpSession session, @PathVariable Long id) {
+        // Sessão
+        com.projeto.songSystem.dto.UsuarioDTO usuarioDto =
+                (com.projeto.songSystem.dto.UsuarioDTO) session.getAttribute("usuarioDTO");
+        if (usuarioDto == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("usuarioDTO", usuarioDto);
+
 
         // Buscar a banda para mostrar no título
         BandaDTO banda = bandaService.obterBanda(id);
