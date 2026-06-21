@@ -22,4 +22,26 @@ public interface AlbumRepository extends JpaRepository<AlbumModel, Long> {
             "WHERE a.albumId = :id")
     Optional<AlbumModel> findByIdWithMusicasAndBanda(@Param("id") Long id);
 
+    @Query("""
+        SELECT a FROM AlbumModel a
+        WHERE (:bandaId IS NULL OR a.banda.bandaId = :bandaId)
+        AND (:ano IS NULL OR a.albumAnoLancamento = :ano)
+        AND (:busca IS NULL
+             OR LOWER(a.albumNome) LIKE CONCAT('%', :busca, '%')
+             OR LOWER(a.banda.bandaNome) LIKE CONCAT('%', :busca, '%'))
+        """)
+    List<AlbumModel> filtrarAlbuns(
+            @Param("bandaId") Long bandaId,
+            @Param("ano") Integer ano,
+            @Param("busca") String busca
+    );
+
+    @Query("""
+        SELECT DISTINCT a.albumAnoLancamento FROM AlbumModel a
+        WHERE a.albumAnoLancamento IS NOT NULL
+        AND (:bandaId IS NULL OR a.banda.bandaId = :bandaId)
+        ORDER BY a.albumAnoLancamento DESC
+        """)
+    List<Integer> obterAnosDisponiveis(@Param("bandaId") Long bandaId);
+
 }

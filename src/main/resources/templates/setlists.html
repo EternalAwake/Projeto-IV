@@ -252,24 +252,25 @@
                                     <span class="input-group-text bg-white border-end-0 rounded-3-start">
                                         <i class="bi bi-search"></i>
                                     </span>
-                                    <input type="text" class="form-control border-start-0 rounded-3-end"
-                                           id="buscarSetlist" placeholder="Buscar setlist por nome...">
+                                    <input id="buscaSetlist" type="text" class="form-control border-start-0 rounded-3-end"
+                                           placeholder="Buscar setlist por nome..."
+                                           th:value="${buscaAtual}">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <select class="form-select rounded-3" id="filtroQuantidade">
-                                    <option value="">Quantidade de músicas</option>
-                                    <option value="0">Vazio (0 músicas)</option>
-                                    <option value="1-5">1 a 5 músicas</option>
-                                    <option value="6-10">6 a 10 músicas</option>
-                                    <option value="11+">Mais de 10 músicas</option>
+                                    <option value="" th:selected="${quantidadeSelecionada == null}">Quantidade de músicas</option>
+                                    <option value="0" th:selected="${quantidadeSelecionada == '0'}">Vazio (0 músicas)</option>
+                                    <option value="1-5" th:selected="${quantidadeSelecionada == '1-5'}">1 a 5 músicas</option>
+                                    <option value="6-10" th:selected="${quantidadeSelecionada == '6-10'}">6 a 10 músicas</option>
+                                    <option value="11+" th:selected="${quantidadeSelecionada == '11+'}">Mais de 10 músicas</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <select class="form-select rounded-3" id="filtroOrdem">
-                                    <option value="nome">Ordenar por nome</option>
-                                    <option value="data">Data de criação</option>
-                                    <option value="musicas">Quantidade de músicas</option>
+                                    <option value="nome" th:selected="${ordemSelecionada == 'nome'}">Ordenar por nome</option>
+                                    <option value="data" th:selected="${ordemSelecionada == 'data'}">Data de criação</option>
+                                    <option value="musicas" th:selected="${ordemSelecionada == 'musicas'}">Quantidade de músicas</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -362,10 +363,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Excluir setlist
-        document.querySelectorAll('.excluir-setlist').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('.excluir-setlist').forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 const setlistId = this.dataset.setlistId;
                 const setlistNome = this.dataset.setlistNome;
 
@@ -378,6 +379,19 @@
                 }
             });
         });
+    });
+
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        const busca = document.getElementById('buscaSetlist').value;
+        const quantidade = document.getElementById('filtroQuantidade').value;
+        const ordem = document.getElementById('filtroOrdem').value;
+
+        const params = new URLSearchParams();
+        if (busca) params.set('busca', busca);
+        if (quantidade) params.set('quantidade', quantidade);
+        if (ordem) params.set('ordem', ordem);
+
+        window.location.href = `/repertorio/setlists?${params.toString()}`;
     });
 </script>
 

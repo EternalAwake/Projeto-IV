@@ -277,7 +277,7 @@
                                     <span class="input-group-text bg-white border-end-0 rounded-3-start">
                                         <i class="bi bi-search"></i>
                                     </span>
-                                    <input type="text" class="form-control border-start-0 rounded-3-end" placeholder="Buscar música...">
+                                    <input id="buscaMusica" type="text" class="form-control border-start-0 rounded-3-end" placeholder="Buscar música...">
                                 </div>
                             </div>
                             <div class="col-md-2">
@@ -409,57 +409,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Remover música do repertório
-        document.querySelectorAll('.remover-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const musicaId = this.dataset.musicaId;
-                const musicaNome = this.dataset.musicaNome;
-                const row = this.closest('tr');
-
-                if (confirm(`Remover "${musicaNome}" do seu repertório?`)) {
-                    fetch(`/repertorio/${musicaId}`, {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            row.remove();
-                            alert(data.message);
-                            location.reload(); // Recarrega para atualizar estatísticas
-                        } else {
-                            alert(data.error);
-                        }
-                    })
-                    .catch(error => alert('Erro ao remover música.'));
-                }
-            });
-        });
-
-        // Registrar prática
-        document.querySelectorAll('.praticar-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const musicaId = this.dataset.musicaId;
-                const musicaNome = this.dataset.musicaNome;
-
-                if (confirm(`Registrar prática de "${musicaNome}"?`)) {
-                    fetch(`/repertorio/${musicaId}/praticar`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Prática registrada com sucesso!');
-                            location.reload();
-                        } else {
-                            alert(data.error);
-                        }
-                    })
-                    .catch(error => alert('Erro ao registrar prática.'));
-                }
-            });
-        });
+        ativarListenersAcoes();
     });
 </script>
 
@@ -697,6 +647,141 @@
             }
         });
     }
+
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        const status = document.getElementById('filtroStatus').value;
+        const dificuldade = document.getElementById('filtroDificuldade').value;
+        const musicaTom = document.getElementById('filtroTom').value;
+        const busca = document.getElementById('buscaMusica').value;
+
+        fetch(`/repertorio/filtrar?status=${status}&dificuldade=${dificuldade}&musicaTom=${musicaTom}&busca=${busca}`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('table tbody');
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                            <p class="text-muted">Nenhum item encontrado</p>
+                        </td>
+                    </tr>
+                `;
+                    return;
+                }
+
+                let html = '';
+                data.forEach((item, index) => {
+                    const ultimaPratica = item.ultimaPratica
+                        ? new Date(item.ultimaPratica).toLocaleDateString('pt-BR')
+                        : '—';
+
+                    html += `
+                    <tr>
+                        <td class="ps-4 fw-medium">${index + 1}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-medium">${escapeHtml(item.musicaNome) || '—'}</span>
+                            </div>
+                        </td>
+                        <td>${escapeHtml(item.bandaNome) || '—'}</td>
+                        <td>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">${item.musicaTom || '—'}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">${item.dificuldadeDescricao || item.dificuldade || '—'}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">${item.statusDescricao || item.status || '—'}</span>
+                        </td>
+                        <td>${ultimaPratica}</td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-secondary rounded-3 me-1 action-btn praticar-btn"
+                                    data-musica-id="${item.musicaId}"
+                                    data-musica-nome="${item.musicaNome}"
+                                    title="Praticar">
+                                <i class="bi bi-music-note"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary rounded-3 me-1 action-btn editar-status-btn"
+                                    data-musica-id="${item.musicaId}"
+                                    data-status-atual="${item.status}"
+                                    title="Alterar status">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger rounded-3 action-btn remover-btn"
+                                    data-musica-id="${item.musicaId}"
+                                    data-musica-nome="${escapeHtml(item.musicaNome)}"
+                                    title="Remover do repertório">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                });
+
+                tbody.innerHTML = html;
+                ativarListenersAcoes();
+            });
+    });
+
+    // Reaproveita os listeners de ação (praticar, remover) em qualquer linha presente na tabela,
+    // chamado tanto no load inicial quanto após filtrar
+    function ativarListenersAcoes() {
+        document.querySelectorAll('.remover-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const musicaId = this.dataset.musicaId;
+                const musicaNome = this.dataset.musicaNome;
+                const row = this.closest('tr');
+
+                if (confirm(`Remover "${musicaNome}" do seu repertório?`)) {
+                    fetch(`/repertorio/${musicaId}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                row.remove();
+                                alert(data.message);
+                                location.reload();
+                            } else {
+                                alert(data.error);
+                            }
+                        })
+                        .catch(error => alert('Erro ao remover música.'));
+                }
+            });
+        });
+
+        document.querySelectorAll('.praticar-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const musicaId = this.dataset.musicaId;
+                const musicaNome = this.dataset.musicaNome;
+
+                if (confirm(`Registrar prática de "${musicaNome}"?`)) {
+                    fetch(`/repertorio/${musicaId}/praticar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Prática registrada com sucesso!');
+                                location.reload();
+                            } else {
+                                alert(data.error);
+                            }
+                        })
+                        .catch(error => alert('Erro ao registrar prática.'));
+                }
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        ativarListenersAcoes();
+    });
 
     // Busca em tempo real
     const buscarInput = document.getElementById('buscarMusicaModal');

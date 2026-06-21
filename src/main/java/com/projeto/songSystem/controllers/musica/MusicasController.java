@@ -6,19 +6,14 @@ import com.projeto.songSystem.services.AlbumService;
 import com.projeto.songSystem.services.BandaService;
 import com.projeto.songSystem.services.MusicaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Controller
-@RequestMapping()
+@RequestMapping("/biblioteca/musicas")
 public class MusicasController {
 
     @Autowired
@@ -30,10 +25,14 @@ public class MusicasController {
     @Autowired
     private AlbumService albumService;
 
-    @GetMapping("/biblioteca/musicas")
-    public String listarMusicas(Model model) {
-
-        List<MusicaModel> musicas = musicaService.listarMusicas();
+    @GetMapping
+    public String listarMusicas(
+            @RequestParam(required = false) String bandaId,
+            @RequestParam(required = false) String tom,
+            @RequestParam(required = false) String busca,
+            Model model
+    ) {
+        List<MusicaModel> musicas = musicaService.filtrarMusicas(bandaId, tom, busca);
         List<BandaModel> todasBandas = bandaService.listarBandas();
 
         model.addAttribute("musicas", musicas);
@@ -42,6 +41,9 @@ public class MusicasController {
         model.addAttribute("totalBandas", bandaService.obterQtdBandas());
         model.addAttribute("totalAlbuns", albumService.obterQtdAlbuns());
 
+        model.addAttribute("bandaIdSelecionada", bandaId);
+        model.addAttribute("tomSelecionado", tom);
+        model.addAttribute("buscaAtual", busca);
+
         return "musicas";
-    }
-}
+    }}
